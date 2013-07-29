@@ -3,6 +3,7 @@ package com.steelkiwi.patheditor.gdx;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector3;
@@ -18,6 +19,7 @@ public class GdxScreen extends Screen implements IScreenStructureChangeListener 
 	private Stage stage;
 	private BGDrawer bgDrawer;
 	private GdxImage bgImage;
+	private SplineBuilder splineBuilder;
 	private InputMultiplexer inputMultiplexer;
 	
 	public GdxScreen(GdxApp gdxApp, int stageW, int stageH, int canvasW, int canvasH) {
@@ -59,6 +61,8 @@ public class GdxScreen extends Screen implements IScreenStructureChangeListener 
 								 (int)camera.position.x, (int)camera.position.y,
 								 (int)camera.viewportWidth, (int)camera.viewportHeight,
 								 stage.getSpriteBatch());
+		
+		if (splineBuilder != null) { splineBuilder.present(camera.combined); }
 	}
 
 	@Override
@@ -73,16 +77,17 @@ public class GdxScreen extends Screen implements IScreenStructureChangeListener 
 	@Override
 	public void dispose() {
 		bgImage = null;
-		camera = null;
-		if (bgDrawer != null) { bgDrawer.dispose(); bgDrawer = null; }
+		camera  = null;
+		if (bgDrawer         != null) { bgDrawer.dispose();       bgDrawer = null;         }
+		if (splineBuilder    != null) { splineBuilder.dispose();  splineBuilder = null;    }
 		if (inputMultiplexer != null) { inputMultiplexer.clear(); inputMultiplexer = null; }
-		if (stage != null) { stage.dispose(); stage = null; }
+		if (stage            != null) { stage.dispose();          stage = null;            }
 		screenToStageCoords = null;
 		gdxApp = null;
 	}
 	
 	// ==============================================================
-	// create screen elements
+	// create screen background
 	// ==============================================================
 
 	@Override
@@ -109,20 +114,73 @@ public class GdxScreen extends Screen implements IScreenStructureChangeListener 
 	}
 	
 	// ==============================================================
+	// create path
+	// ==============================================================
+	
+	@Override
+	public void onAddPath() {
+		splineBuilder = new SplineBuilder();
+	}
+	
+	// ==============================================================
 	// input handler
 	// ==============================================================
 
 	private class InputHandler extends InputAdapter {
+		@Override
+		public boolean keyDown(int keycode) { //TODO debug, replace with toolbar toggles
+			if (splineBuilder == null) { return false; }
+			
+			if (keycode == Keys.A) {
+				if (splineBuilder.checkCanAddVertex()) {
+					splineBuilder.changeAddVertexMode();
+					return true;
+				}
+				return false;
+			}
+			if (keycode == Keys.I) {
+				if (splineBuilder.checkCanInsertVertex()) {
+					splineBuilder.changeInsertVertexMode();
+
+				}	
+				return true;
+			}
+			if (keycode == Keys.E) {
+				if (splineBuilder.checkCanEditVertex()) {
+					splineBuilder.changeEditVertexMode();
+					return true;
+				}
+				return false;
+			}
+			if (keycode == Keys.R) {
+				if (splineBuilder.checkCanRemoveVertex()) {
+					splineBuilder.changeRemoveVertexMode();
+				}	
+				return true;
+			}
+			if (keycode == Keys.C) {
+				splineBuilder.clearSpline();
+				return true;
+			}
+			
+			return false;
+		}
+
 		@Override
 		public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 			if (pointer > 0) { return false; }
 			camera.unproject(screenToStageCoords.set(screenX, screenY, 0));
 			System.out.println(String.format("stage touch down at (%f, %f)", screenToStageCoords.x, screenToStageCoords.y));
 			
-			if (button == 1) {
-				camera.setLastCamTouch(screenX, screenY);
+			if ((button == 0) && (splineBuilder != null)) { //manage path
+				return splineBuilder.touchDown(screenToStageCoords.x, screenToStageCoords.y);
 			}
-			return true;
+			if (button == 1) { //drag scene
+				camera.setLastCamTouch(screenX, screenY);
+				return true;
+			}
+			
+			return false;
 		}
 
 		@Override
@@ -133,8 +191,13 @@ public class GdxScreen extends Screen implements IScreenStructureChangeListener 
 			
 			if (camera.isMapMoving()) {
 				camera.move(screenX, screenY);
+				return true;
 			}
-			return true;
+			else if (splineBuilder != null) {
+				return splineBuilder.touchDragged(screenToStageCoords.x, screenToStageCoords.y);
+			}
+			
+			return false;
 		}
 
 		@Override

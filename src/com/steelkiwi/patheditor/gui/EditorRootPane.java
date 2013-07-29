@@ -262,6 +262,12 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 	}
 
 	@Override
+	public void onPathAdded(String name) {
+		glPanel.getGdxApp().onAddPath();
+		//TODO create path data and add to current screen data, add tree leaf
+	}
+
+	@Override
 	public void onLeafSwitched(String name, TreePath path) {
 		ScreenData scrData = getNodeScreenData(getLeafParentNode(path));
 		setScreen(scrData);

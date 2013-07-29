@@ -85,6 +85,11 @@ public class GdxApp implements ApplicationListener, IScreenStructureChangeListen
 		return null;
 	}
 
+	@Override
+	public void onAddPath() {
+		if (screen != null) { screen.onAddPath(); }
+	}
+
 	public IUIHandler getUiHandler() {
 		return uiHandler;
 	}

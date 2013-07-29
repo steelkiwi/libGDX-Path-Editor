@@ -73,6 +73,11 @@ public class IMenuHandler implements ActionListener, ITreeHandler {
 			showSelectTextureDialog();
 			return;
 		}
+		
+		if (arg0.getActionCommand().equals(MenuConsts.addPath)) {
+			showCreatePathDialog();
+			return;
+		}
 	}
 
 	@Override
@@ -146,5 +151,10 @@ public class IMenuHandler implements ActionListener, ITreeHandler {
 		SwingHelper.setDialogWindowToCenter(dlg);
 		dlg.setModal(true);
 		dlg.setVisible(true);
+	}
+	
+	private void showCreatePathDialog() {
+		//TODO set path name, spline's intermediate points cnt, color for control, regular and selected vertices
+		rootPane.onPathAdded("path");
 	}
 }
