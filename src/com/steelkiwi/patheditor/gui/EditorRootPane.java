@@ -282,7 +282,14 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 	// ==============================================================
 	// path
 	// ==============================================================
-
+	
+	@Override
+	public void onPathCreate(String name, int pointsCnt, String controlColor, String segmentColor, String selectColor) {
+		glPanel.getGdxApp().onAddPath(pointsCnt, controlColor, segmentColor, selectColor);
+		
+		//TODO create path data and add to current screen data, add tree leaf
+	}
+	
 	@Override
 	public void onPathVertexAdd() {
 		renderMode mode = glPanel.getGdxApp().getPathMode();
@@ -300,13 +307,16 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		editVertexButton.setSelected(false);
 		insertVertexButton.setSelected(false);
 		removeVertexButton.setSelected(false);
-		
-		glPanel.getGdxApp().onAddPath();
+
 		glPanel.getGdxApp().setPathMode(renderMode.ADD);
-		
-		//TODO create path data and add to current screen data, add tree leaf
 	}
 
+	//TODO init only add point is enabled, others are enabled if there is a path
+	//when clear path is clicked -> disable all except add
+	//when remove point is clicked and no more points left -> disable all except add
+	//when path is empty (init or after cleaning/removing) before creating it ask to change settings -> show createpathdialog 
+	//save/load path to json/xml
+	
 	@Override
 	public void onPathVertexEdit() {
 		renderMode mode = glPanel.getGdxApp().getPathMode();
@@ -325,7 +335,6 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		insertVertexButton.setSelected(false);
 		removeVertexButton.setSelected(false);
 		
-		glPanel.getGdxApp().onAddPath();
 		glPanel.getGdxApp().setPathMode(renderMode.EDIT);
 	}
 
@@ -347,7 +356,6 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		editVertexButton.setSelected(false);
 		removeVertexButton.setSelected(false);
 		
-		glPanel.getGdxApp().onAddPath();
 		glPanel.getGdxApp().setPathMode(renderMode.INSERT);
 	}
 
@@ -369,7 +377,6 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		editVertexButton.setSelected(false);
 		insertVertexButton.setSelected(false);
 		
-		glPanel.getGdxApp().onAddPath();
 		glPanel.getGdxApp().setPathMode(renderMode.REMOVE);
 	}
 

@@ -24,9 +24,10 @@ public class SplineBuilder {
 	
 	private Path resultPath;
 	
-	public SplineBuilder() {
-		spline   = new PathSpline();
-		renderer = new SplineRenderer(spline);
+	public SplineBuilder(int pointsCnt, String controlColor, String segmentColor, String selectColor) {
+		spline = new PathSpline();
+		spline.setSplineSegmentPointsCount(pointsCnt);
+		renderer = new SplineRenderer(spline, controlColor, segmentColor, selectColor);
 	}
 	
 	private void addSplineVertex(float x, float y) {
@@ -92,7 +93,7 @@ public class SplineBuilder {
 				    				 isCntrl);
       		isCntrl = false;
       		c++;
-      		if (c == 10) { //TODO it's a spline's intermediatePointsCount ???
+      		if (c == spline.getSplineSegmentVerticesCount()) {
       			isCntrl = true;
       			c = -1;
       		}

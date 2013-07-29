@@ -87,8 +87,14 @@ public class GdxApp implements ApplicationListener, IScreenStructureChangeListen
 	}
 
 	@Override
-	public void onAddPath() {
-		if (screen != null) { screen.onAddPath(); }
+	public boolean isPathInit() {
+		if (screen != null) { return screen.isPathInit(); }
+		return false;
+	}
+
+	@Override
+	public void onAddPath(int pointsCnt, String controlColor, String segmentColor, String selectColor) {
+		if (screen != null) { screen.onAddPath(pointsCnt, controlColor, segmentColor, selectColor); }
 	}
 
 	@Override

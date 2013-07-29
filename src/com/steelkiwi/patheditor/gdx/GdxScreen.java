@@ -118,9 +118,14 @@ public class GdxScreen extends Screen implements IScreenStructureChangeListener 
 	// ==============================================================
 	
 	@Override
-	public void onAddPath() {
+	public boolean isPathInit() {
+		return (splineBuilder != null);
+	}
+	
+	@Override
+	public void onAddPath(int pointsCnt, String controlColor, String segmentColor, String selectColor) {
 		if (splineBuilder == null) {
-			splineBuilder = new SplineBuilder();
+			splineBuilder = new SplineBuilder(pointsCnt, controlColor, segmentColor, selectColor);
 		}
 	}
 	

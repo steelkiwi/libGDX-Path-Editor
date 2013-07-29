@@ -17,6 +17,7 @@ public interface IProjectHandler {
 	public void onBGImageAdded(String name, String path, float scaleCoef);
 	public void onLeafSwitched(String name, TreePath path);
 	
+	public void onPathCreate(String name, int pointsCnt, String controlColor, String segmentColor, String selectColor);
 	public void onPathVertexAdd();
 	public void onPathVertexEdit();
 	public void onPathVertexInsert();

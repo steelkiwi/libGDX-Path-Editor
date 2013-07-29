@@ -15,6 +15,8 @@ import com.steelkiwi.patheditor.gui.dlg.CreateNewProjectDialog;
 import com.steelkiwi.patheditor.gui.dlg.CreateNewProjectDialog.ICreateNewProjectHandler;
 import com.steelkiwi.patheditor.gui.dlg.CreateNewScreenDialog;
 import com.steelkiwi.patheditor.gui.dlg.CreateNewScreenDialog.ICreateNewScreenHandler;
+import com.steelkiwi.patheditor.gui.dlg.CreatePathDialog;
+import com.steelkiwi.patheditor.gui.dlg.CreatePathDialog.ICreatePathHandler;
 import com.steelkiwi.patheditor.proj.ScreenData;
 import com.steelkiwi.patheditor.utils.SwingHelper;
 
@@ -178,7 +180,20 @@ public class IMenuHandler implements ActionListener, ITreeHandler {
 	}
 	
 	private void showCreatePathDialog() {
-		//TODO set path name, spline's intermediate points cnt, color for control, regular and selected vertices
-		rootPane.onPathVertexAdd();
+		if (rootPane.getGlPanel().getGdxApp().isPathInit()) { 
+			rootPane.onPathVertexAdd();
+			return; 
+		}
+		
+		CreatePathDialog dlg = new CreatePathDialog(rootPane, new ICreatePathHandler() {
+			@Override
+			public void getPathData(String name, int pointsCnt, String controlColor, String segmentColor, String selectColor) {
+				rootPane.onPathCreate(name, pointsCnt, controlColor, segmentColor, selectColor);
+				rootPane.onPathVertexAdd();
+			}
+		});
+		SwingHelper.setDialogWindowToCenter(dlg);
+		dlg.setModal(true);
+		dlg.setVisible(true);
 	}
 }

@@ -2,6 +2,7 @@ package com.steelkiwi.patheditor.path;
 
 import java.util.ArrayList;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.CatmullRomSpline;
 import com.badlogic.gdx.math.Vector3;
@@ -15,7 +16,7 @@ public class PathSpline {
 	private Vector3[] totalVertices;            //spline's whole vertices (control points + intermediate points)
 	private ArrayList<Vector3> tangentsNormal;  //vertices tangents normals
 	
-	public int intermediatePointsCount = 7; //TODO set in ui
+	private int segmentPointsCount = 1;
 	
 	public PathSpline() {
 		spline = new CatmullRomSpline();
@@ -69,16 +70,16 @@ public class PathSpline {
 		//generate all vertices
 		//(getSplineControlVerticesCount() - 2) cause spline creation needs two extra points
 		if (totalVertices != null) { totalVertices = null; }
-        totalVertices = new Vector3[(((getSplineControlVerticesCount() - 2) - 1) * (intermediatePointsCount + 2)) - ((getSplineControlVerticesCount() - 2) - 2)]; 
+        totalVertices = new Vector3[(((getSplineControlVerticesCount() - 2) - 1) * (segmentPointsCount + 2)) - ((getSplineControlVerticesCount() - 2) - 2)]; 
         for (int i=0; i<getSplineVerticesCount(); i++) {
             totalVertices[i] = new Vector3();
         }
-        spline.getPath(totalVertices, intermediatePointsCount);
+        spline.getPath(totalVertices, segmentPointsCount);
         
         //get tangent normals for all vertices
         //getSplineVerticesCount() = tangentsNormal.size() + 1
         if (tangentsNormal != null) { tangentsNormal.clear(); tangentsNormal = null; } 
-        tangentsNormal = (ArrayList<Vector3>) spline.getTangentNormals2D(intermediatePointsCount);
+        tangentsNormal = (ArrayList<Vector3>) spline.getTangentNormals2D(segmentPointsCount);
 	}
 
 	public int getNearestSplineControlVertexIndex(float x, float y) {
@@ -133,20 +134,23 @@ public class PathSpline {
 		return tangentsNormal.size();
 	}
 	    
-    public int getSplineIntermediateVerticesCount() {
-    	return intermediatePointsCount;
+    public int getSplineSegmentVerticesCount() {
+    	return segmentPointsCount;
     }
-	
-    //TODO set control and intermediate vertices color and size in ui
     
-    public void present(ShapeRenderer renderer, int index, int leftIndex, int rightIndex, renderMode mode) {
+    public void setSplineSegmentPointsCount(int segmentPointsCount) {
+		this.segmentPointsCount = segmentPointsCount;
+	}
+    
+	public void present(ShapeRenderer renderer, int index, int leftIndex, int rightIndex, renderMode mode,
+						 Color controlColor, Color segmentColor, Color selectColor) {
     	Vector3 v;
     	
     	//draw all vertices
     	if (totalVertices != null) {
 	        for (int i=0; i<getSplineVerticesCount()-1; i++) {
 	            v = totalVertices[i];
-	            renderer.setColor(0.94f, 0, 1, 1);
+	            renderer.setColor(segmentColor);
 	            renderer.filledCircle(v.x, v.y, 4);
 	        }
         }
@@ -155,7 +159,7 @@ public class PathSpline {
         if (controlVertices != null) {
 	        for (int i=0; i<controlVertices.size(); i++) {
 	            v = controlVertices.get(i);
-	            renderer.setColor(0, 0, 1, 1);
+	            renderer.setColor(controlColor);
 	            renderer.filledCircle(v.x, v.y, 4);
 	        }
         }
@@ -168,19 +172,19 @@ public class PathSpline {
         	        	if (mode == renderMode.EDIT) {
 	        	        	if (i == index) {
 	        	        		v = controlVertices.get(i);
-	        	        		renderer.setColor(0, 1, 0, 1);
+	        	        		renderer.setColor(selectColor);
 		    		            renderer.filledCircle(v.x, v.y, 8);
 	        	        	}
         	        	}
         	        	if (mode == renderMode.INSERT) {
         	        		if (i == leftIndex) {
 	        	        		v = controlVertices.get(i);
-	        	        		renderer.setColor(0, 1, 0, 1);
+	        	        		renderer.setColor(selectColor);
 		    		            renderer.filledCircle(v.x, v.y, 8);
 	        	        	}
         	        		if (i == rightIndex) {
 	        	        		v = controlVertices.get(i);
-	        	        		renderer.setColor(0, 1, 0, 1);
+	        	        		renderer.setColor(selectColor);
 		    		            renderer.filledCircle(v.x, v.y, 8);
 	        	        	}
         	        	}
