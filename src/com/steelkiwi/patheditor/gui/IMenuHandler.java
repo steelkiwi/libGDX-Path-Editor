@@ -74,8 +74,32 @@ public class IMenuHandler implements ActionListener, ITreeHandler {
 			return;
 		}
 		
-		if (arg0.getActionCommand().equals(MenuConsts.addPath)) {
+		if (arg0.getActionCommand().equals(MenuConsts.addVertex)) {
 			showCreatePathDialog();
+			return;
+		}
+		
+		// ==============================================================
+		// path
+		// ==============================================================
+		
+		if (arg0.getActionCommand().equals(MenuConsts.moveVertex)) {
+			rootPane.onPathVertexEdit();
+			return;
+		}
+		
+		if (arg0.getActionCommand().equals(MenuConsts.insertVertex)) {
+			rootPane.onPathVertexInsert();
+			return;
+		}
+		
+		if (arg0.getActionCommand().equals(MenuConsts.removeVertex)) {
+			rootPane.onPathVertexRemove();
+			return;
+		}
+		
+		if (arg0.getActionCommand().equals(MenuConsts.clearPath)) {
+			rootPane.onPathClear();
 			return;
 		}
 	}
@@ -155,6 +179,6 @@ public class IMenuHandler implements ActionListener, ITreeHandler {
 	
 	private void showCreatePathDialog() {
 		//TODO set path name, spline's intermediate points cnt, color for control, regular and selected vertices
-		rootPane.onPathAdded("path");
+		rootPane.onPathVertexAdd();
 	}
 }

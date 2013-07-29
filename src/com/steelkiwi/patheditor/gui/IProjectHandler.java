@@ -15,6 +15,11 @@ public interface IProjectHandler {
 	public void onRootSwitched();
 	
 	public void onBGImageAdded(String name, String path, float scaleCoef);
-	public void onPathAdded(String name);
 	public void onLeafSwitched(String name, TreePath path);
+	
+	public void onPathVertexAdd();
+	public void onPathVertexEdit();
+	public void onPathVertexInsert();
+	public void onPathVertexRemove();
+	public void onPathClear();
 }

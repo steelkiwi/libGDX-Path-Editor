@@ -3,6 +3,7 @@ package com.steelkiwi.patheditor.gdx;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
+import com.steelkiwi.patheditor.gdx.SplineBuilder.renderMode;
 import com.steelkiwi.patheditor.gui.IUIHandler;
 import com.steelkiwi.patheditor.proj.ScreenData;
 import com.steelkiwi.patheditor.widgets.GdxImage;
@@ -88,6 +89,22 @@ public class GdxApp implements ApplicationListener, IScreenStructureChangeListen
 	@Override
 	public void onAddPath() {
 		if (screen != null) { screen.onAddPath(); }
+	}
+
+	@Override
+	public void onClearPath() {
+		if (screen != null) { screen.onClearPath(); }
+	}
+
+	@Override
+	public renderMode getPathMode() {
+		if (screen != null) { return screen.getPathMode(); }
+		return null;
+	}
+
+	@Override
+	public void setPathMode(renderMode mode) {
+		if (screen != null) { screen.setPathMode(mode); }
 	}
 
 	public IUIHandler getUiHandler() {

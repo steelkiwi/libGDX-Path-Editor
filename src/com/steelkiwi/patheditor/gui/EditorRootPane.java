@@ -11,6 +11,7 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -21,6 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.border.BevelBorder;
@@ -31,6 +33,7 @@ import javax.swing.tree.TreePath;
 import com.steelkiwi.patheditor.consts.MenuConsts;
 import com.steelkiwi.patheditor.consts.MenuConsts.TREE_NODE_TYPE;
 import com.steelkiwi.patheditor.consts.MsgConsts;
+import com.steelkiwi.patheditor.gdx.SplineBuilder.renderMode;
 import com.steelkiwi.patheditor.proj.ProjectData;
 import com.steelkiwi.patheditor.proj.ProjectDataConverter;
 import com.steelkiwi.patheditor.proj.ScreenData;
@@ -48,7 +51,11 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 	private JMenuItem closeProjectItem;
 	private JMenuItem addScreen;
 	private JMenuItem addBG;
-	private JMenuItem addPath;
+	private JCheckBoxMenuItem addVertex;
+	private JCheckBoxMenuItem editVertex;
+	private JCheckBoxMenuItem insertVertex;
+	private JCheckBoxMenuItem removeVertex;
+	private JMenuItem clearPath;
 	
 	private JButton newProjectButton;
 	private JButton openProjectButton;
@@ -56,7 +63,11 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 	private JButton closeProjectButton;
 	private JButton addScreenButton;
 	private JButton addBGButton;
-	private JButton addPathButton;
+	private JToggleButton addVertexButton;
+	private JToggleButton editVertexButton;
+	private JToggleButton insertVertexButton;
+	private JToggleButton removeVertexButton;
+	private JButton clearPathButton;
 	
 	private JTree projectTree;
 	private JScrollPane projectTreeScroll;
@@ -262,16 +273,119 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 	}
 
 	@Override
-	public void onPathAdded(String name) {
-		glPanel.getGdxApp().onAddPath();
-		//TODO create path data and add to current screen data, add tree leaf
-	}
-
-	@Override
 	public void onLeafSwitched(String name, TreePath path) {
 		ScreenData scrData = getNodeScreenData(getLeafParentNode(path));
 		setScreen(scrData);
 		selectTreeNode(path);
+	}
+	
+	// ==============================================================
+	// path
+	// ==============================================================
+
+	@Override
+	public void onPathVertexAdd() {
+		renderMode mode = glPanel.getGdxApp().getPathMode();
+		if ((mode == null) || (mode != renderMode.ADD)) {
+			addVertex.setSelected(true);
+			addVertexButton.setSelected(true);
+		}
+		else if (mode == renderMode.ADD) {
+			addVertex.setSelected(false);
+			addVertexButton.setSelected(false);
+		}
+		editVertex.setSelected(false);
+		insertVertex.setSelected(false);
+		removeVertex.setSelected(false);
+		editVertexButton.setSelected(false);
+		insertVertexButton.setSelected(false);
+		removeVertexButton.setSelected(false);
+		
+		glPanel.getGdxApp().onAddPath();
+		glPanel.getGdxApp().setPathMode(renderMode.ADD);
+		
+		//TODO create path data and add to current screen data, add tree leaf
+	}
+
+	@Override
+	public void onPathVertexEdit() {
+		renderMode mode = glPanel.getGdxApp().getPathMode();
+		if ((mode == null) || (mode != renderMode.EDIT)) {
+			editVertex.setSelected(true);
+			editVertexButton.setSelected(true);
+		}
+		else if (mode == renderMode.EDIT) {
+			editVertex.setSelected(false);
+			editVertexButton.setSelected(false);
+		}
+		addVertex.setSelected(false);
+		insertVertex.setSelected(false);
+		removeVertex.setSelected(false);
+		addVertexButton.setSelected(false);
+		insertVertexButton.setSelected(false);
+		removeVertexButton.setSelected(false);
+		
+		glPanel.getGdxApp().onAddPath();
+		glPanel.getGdxApp().setPathMode(renderMode.EDIT);
+	}
+
+	@Override
+	public void onPathVertexInsert() {
+		renderMode mode = glPanel.getGdxApp().getPathMode();
+		if ((mode == null) || (mode != renderMode.INSERT)) {
+			insertVertex.setSelected(true);
+			insertVertexButton.setSelected(true);
+		}
+		else if (mode == renderMode.INSERT) {
+			insertVertex.setSelected(false);
+			insertVertexButton.setSelected(false);
+		}
+		addVertex.setSelected(false);
+		editVertex.setSelected(false);
+		removeVertex.setSelected(false);
+		addVertexButton.setSelected(false);
+		editVertexButton.setSelected(false);
+		removeVertexButton.setSelected(false);
+		
+		glPanel.getGdxApp().onAddPath();
+		glPanel.getGdxApp().setPathMode(renderMode.INSERT);
+	}
+
+	@Override
+	public void onPathVertexRemove() {
+		renderMode mode = glPanel.getGdxApp().getPathMode();
+		if ((mode == null) || (mode != renderMode.REMOVE)) {
+			removeVertex.setSelected(true);
+			removeVertexButton.setSelected(true);
+		}
+		else if (mode == renderMode.REMOVE) {
+			removeVertex.setSelected(false);
+			removeVertexButton.setSelected(false);
+		}
+		addVertex.setSelected(false);
+		editVertex.setSelected(false);
+		insertVertex.setSelected(false);
+		addVertexButton.setSelected(false);
+		editVertexButton.setSelected(false);
+		insertVertexButton.setSelected(false);
+		
+		glPanel.getGdxApp().onAddPath();
+		glPanel.getGdxApp().setPathMode(renderMode.REMOVE);
+	}
+
+	@Override
+	public void onPathClear() {
+		addVertex.setSelected(false);
+		editVertex.setSelected(false);
+		insertVertex.setSelected(false);
+		removeVertex.setSelected(false);
+		addVertexButton.setSelected(false);
+		editVertexButton.setSelected(false);
+		insertVertexButton.setSelected(false);
+		removeVertexButton.setSelected(false);
+		
+		glPanel.getGdxApp().onClearPath();
+		glPanel.getGdxApp().setPathMode(null);
 	}
 	
 	// ==============================================================
@@ -345,10 +459,32 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 	private JMenu createAddPathMenu(){
 		JMenu menu = new JMenu(MenuConsts.path);
 		
-		addPath = new JMenuItem(MenuConsts.addPath);
-		addPath.setIcon(new ImageIcon("data/menu/addPath_menu.png"));
-		addPath.addActionListener(menuHandler);
-		menu.add(addPath);
+		addVertex = new JCheckBoxMenuItem(MenuConsts.addVertex);
+		addVertex.setIcon(new ImageIcon("data/menu/vertexAdd_menu.png"));
+		addVertex.addActionListener(menuHandler);
+		menu.add(addVertex);
+		
+		editVertex = new JCheckBoxMenuItem(MenuConsts.moveVertex);
+		editVertex.setIcon(new ImageIcon("data/menu/vertexEdit_menu.png"));
+		editVertex.addActionListener(menuHandler);
+		menu.add(editVertex);
+		
+		insertVertex = new JCheckBoxMenuItem(MenuConsts.insertVertex);
+		insertVertex.setIcon(new ImageIcon("data/menu/vertexInsert_menu.png"));
+		insertVertex.addActionListener(menuHandler);
+		menu.add(insertVertex);
+		
+		removeVertex = new JCheckBoxMenuItem(MenuConsts.removeVertex);
+		removeVertex.setIcon(new ImageIcon("data/menu/vertexRemove_menu.png"));
+		removeVertex.addActionListener(menuHandler);
+		menu.add(removeVertex);
+		
+		menu.add(new JSeparator());
+		
+		clearPath = new JMenuItem(MenuConsts.clearPath);
+		clearPath.setIcon(new ImageIcon("data/menu/pathClear_menu.png"));
+		clearPath.addActionListener(menuHandler);
+		menu.add(clearPath);
 		
 		return menu;
 	}
@@ -360,7 +496,11 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		closeProjectItem.setEnabled(false);
 		addScreen.setEnabled(false);
 		addBG.setEnabled(false);
-		addPath.setEnabled(false);
+		addVertex.setEnabled(false);
+		editVertex.setEnabled(false);
+		insertVertex.setEnabled(false);
+		removeVertex.setEnabled(false);
+		clearPath.setEnabled(false);
 	}
 	
 	private void projectOpenedMenuBarState() {
@@ -370,7 +510,11 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		closeProjectItem.setEnabled(true);
 		addScreen.setEnabled(true);
 		addBG.setEnabled(false);
-		addPath.setEnabled(false);
+		addVertex.setEnabled(false);
+		editVertex.setEnabled(false);
+		insertVertex.setEnabled(false);
+		removeVertex.setEnabled(false);
+		clearPath.setEnabled(false);
 	}
 	
 	private void screenCreatedMenuBarState() {
@@ -380,7 +524,11 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		closeProjectItem.setEnabled(true);
 		addScreen.setEnabled(true);
 		addBG.setEnabled(true);
-		addPath.setEnabled(true);
+		addVertex.setEnabled(true);
+		editVertex.setEnabled(true);
+		insertVertex.setEnabled(true);
+		removeVertex.setEnabled(true);
+		clearPath.setEnabled(true);
 	}
 	
 	// ==============================================================
@@ -427,11 +575,35 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		addBGButton.setToolTipText(MenuConsts.addBG);
 		addBGButton.addActionListener(menuHandler);
 		
-		ImageIcon addPathIcon = new ImageIcon("data/toolbar/addPath.png");
-		addPathButton = new JButton(addPathIcon);
-		addPathButton.setActionCommand(MenuConsts.addPath);
-		addPathButton.setToolTipText(MenuConsts.addPath);
-		addPathButton.addActionListener(menuHandler);
+		ImageIcon addVertexIcon = new ImageIcon("data/toolbar/vertexAdd.png");
+		addVertexButton = new JToggleButton(addVertexIcon);
+		addVertexButton.setActionCommand(MenuConsts.addVertex);
+		addVertexButton.setToolTipText(MenuConsts.addVertex);
+		addVertexButton.addActionListener(menuHandler);
+		
+		ImageIcon editVertexIcon = new ImageIcon("data/toolbar/vertexEdit.png");
+		editVertexButton = new JToggleButton(editVertexIcon);
+		editVertexButton.setActionCommand(MenuConsts.moveVertex);
+		editVertexButton.setToolTipText(MenuConsts.moveVertex);
+		editVertexButton.addActionListener(menuHandler);
+		
+		ImageIcon insertVertexIcon = new ImageIcon("data/toolbar/vertexInsert.png");
+		insertVertexButton = new JToggleButton(insertVertexIcon);
+		insertVertexButton.setActionCommand(MenuConsts.insertVertex);
+		insertVertexButton.setToolTipText(MenuConsts.insertVertex);
+		insertVertexButton.addActionListener(menuHandler);
+		
+		ImageIcon removeVertexIcon = new ImageIcon("data/toolbar/vertexRemove.png");
+		removeVertexButton = new JToggleButton(removeVertexIcon);
+		removeVertexButton.setActionCommand(MenuConsts.removeVertex);
+		removeVertexButton.setToolTipText(MenuConsts.removeVertex);
+		removeVertexButton.addActionListener(menuHandler);
+		
+		ImageIcon clearPathIcon = new ImageIcon("data/toolbar/pathClear.png");
+		clearPathButton = new JButton(clearPathIcon);
+		clearPathButton.setActionCommand(MenuConsts.clearPath);
+		clearPathButton.setToolTipText(MenuConsts.clearPath);
+		clearPathButton.addActionListener(menuHandler);
 		
 		toolBar.add(newProjectButton);
 		toolBar.add(openProjectButton);
@@ -442,7 +614,11 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		toolBar.addSeparator(new Dimension(10, 32));
 		toolBar.add(addBGButton);
 		toolBar.addSeparator(new Dimension(10, 32));
-		toolBar.add(addPathButton);
+		toolBar.add(addVertexButton);
+		toolBar.add(editVertexButton);
+		toolBar.add(insertVertexButton);
+		toolBar.add(removeVertexButton);
+		toolBar.add(clearPathButton);
 		
 		return toolBar;
 	}
@@ -454,7 +630,11 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		closeProjectButton.setEnabled(false);
 		addScreenButton.setEnabled(false);
 		addBGButton.setEnabled(false);
-		addPathButton.setEnabled(false);
+		addVertexButton.setEnabled(false);
+		editVertexButton.setEnabled(false);
+		insertVertexButton.setEnabled(false);
+		removeVertexButton.setEnabled(false);
+		clearPathButton.setEnabled(false);
 	}
 	
 	private void projectOpenedToolBarState() {
@@ -464,7 +644,11 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		closeProjectButton.setEnabled(true);
 		addScreenButton.setEnabled(true);
 		addBGButton.setEnabled(false);
-		addPathButton.setEnabled(false);
+		addVertexButton.setEnabled(false);
+		editVertexButton.setEnabled(false);
+		insertVertexButton.setEnabled(false);
+		removeVertexButton.setEnabled(false);
+		clearPathButton.setEnabled(false);
 	}
 	
 	private void screenCreatedToolBarState() {
@@ -474,7 +658,11 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		closeProjectButton.setEnabled(true);
 		addScreenButton.setEnabled(true);
 		addBGButton.setEnabled(true);
-		addPathButton.setEnabled(true);
+		addVertexButton.setEnabled(true);
+		editVertexButton.setEnabled(true);
+		insertVertexButton.setEnabled(true);
+		removeVertexButton.setEnabled(true);
+		clearPathButton.setEnabled(true);
 	}
 	
 	// ==============================================================

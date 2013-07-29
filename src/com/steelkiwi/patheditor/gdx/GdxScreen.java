@@ -3,11 +3,11 @@ package com.steelkiwi.patheditor.gdx;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.steelkiwi.patheditor.gdx.SplineBuilder.renderMode;
 import com.steelkiwi.patheditor.widgets.GdxImage;
 
 public class GdxScreen extends Screen implements IScreenStructureChangeListener {
@@ -119,7 +119,31 @@ public class GdxScreen extends Screen implements IScreenStructureChangeListener 
 	
 	@Override
 	public void onAddPath() {
-		splineBuilder = new SplineBuilder();
+		if (splineBuilder == null) {
+			splineBuilder = new SplineBuilder();
+		}
+	}
+	
+	@Override
+	public void onClearPath() {
+		if (splineBuilder != null) {
+			splineBuilder.clearSpline();
+		}
+	}
+
+	@Override
+	public renderMode getPathMode() {
+		if (splineBuilder != null) {
+			return splineBuilder.getPathMode();
+		}
+		return null;
+	}
+	
+	@Override
+	public void setPathMode(renderMode mode) {
+		if (splineBuilder != null) {
+			splineBuilder.setPathMode(mode);
+		}
 	}
 	
 	// ==============================================================
@@ -127,45 +151,6 @@ public class GdxScreen extends Screen implements IScreenStructureChangeListener 
 	// ==============================================================
 
 	private class InputHandler extends InputAdapter {
-		@Override
-		public boolean keyDown(int keycode) { //TODO debug, replace with toolbar toggles
-			if (splineBuilder == null) { return false; }
-			
-			if (keycode == Keys.A) {
-				if (splineBuilder.checkCanAddVertex()) {
-					splineBuilder.changeAddVertexMode();
-					return true;
-				}
-				return false;
-			}
-			if (keycode == Keys.I) {
-				if (splineBuilder.checkCanInsertVertex()) {
-					splineBuilder.changeInsertVertexMode();
-
-				}	
-				return true;
-			}
-			if (keycode == Keys.E) {
-				if (splineBuilder.checkCanEditVertex()) {
-					splineBuilder.changeEditVertexMode();
-					return true;
-				}
-				return false;
-			}
-			if (keycode == Keys.R) {
-				if (splineBuilder.checkCanRemoveVertex()) {
-					splineBuilder.changeRemoveVertexMode();
-				}	
-				return true;
-			}
-			if (keycode == Keys.C) {
-				splineBuilder.clearSpline();
-				return true;
-			}
-			
-			return false;
-		}
-
 		@Override
 		public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 			if (pointer > 0) { return false; }

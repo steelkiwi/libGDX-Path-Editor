@@ -70,7 +70,7 @@ public class PathSpline {
 		//(getSplineControlVerticesCount() - 2) cause spline creation needs two extra points
 		if (totalVertices != null) { totalVertices = null; }
         totalVertices = new Vector3[(((getSplineControlVerticesCount() - 2) - 1) * (intermediatePointsCount + 2)) - ((getSplineControlVerticesCount() - 2) - 2)]; 
-        for (int i=0; i<getSplineVerticesCount(); i++) { //TODO needed ???
+        for (int i=0; i<getSplineVerticesCount(); i++) {
             totalVertices[i] = new Vector3();
         }
         spline.getPath(totalVertices, intermediatePointsCount);
@@ -161,19 +161,7 @@ public class PathSpline {
         }
         
         //draw currently selected vertex
-        if ((index != -1) || ((leftIndex != -1) || (rightIndex != -1))) { //TODO what is index, leftIndex, rightIndex and mode ???
-/*        	if (mode == 2) {
-	        	if (totalVertices != null) {
-	    	        for (int i=0; i<getSplineVerticesCount()-1; i++) {
-	    	        	if (i == index) {
-	    	            	v = totalVertices[i];
-	    	            	renderer.setColor(0, 1, 0, 1);
-	    		            renderer.filledCircle(v.x, v.y, 8);
-	    	            }
-	    	        }
-	            }
-        	}*/
-        	
+        if ((index != -1) || ((leftIndex != -1) || (rightIndex != -1))) {
         	if ((mode == renderMode.EDIT) || (mode == renderMode.INSERT)) {
         		if (controlVertices != null) {
         	        for (int i=0; i<controlVertices.size(); i++) {

@@ -16,7 +16,7 @@ public class SplineBuilder {
 	private int leftVertexIndex  = -1;
 	private int rightVertexIndex = -1;
 	
-	public static enum renderMode { EDIT, INSERT };
+	public static enum renderMode { ADD, EDIT, INSERT, REMOVE };
 	private renderMode mode;
 	
 	private PathSpline spline;
@@ -149,40 +149,68 @@ public class SplineBuilder {
 		return false;
 	}
 	
-	public boolean checkCanAddVertex() {
-		return (!modeEditVertex && !modeInsertVertex && !modeRemoveVertex);
+	public renderMode getPathMode() {
+		if (modeAddVertex)    { return renderMode.ADD;    }
+		if (modeEditVertex)   { return renderMode.EDIT;   }
+		if (modeInsertVertex) { return renderMode.INSERT; }
+		if (modeRemoveVertex) { return renderMode.REMOVE; }
+		return null;
 	}
 	
-	public void changeAddVertexMode() {
-		modeAddVertex = !modeAddVertex;
-	}
-	
-	public boolean checkCanEditVertex() {
-		return (!modeAddVertex && !modeInsertVertex && !modeRemoveVertex);
-	}
-	
-	public void changeEditVertexMode() {
-		modeEditVertex = !modeEditVertex;
-		if (!modeEditVertex) {
-			curVertexIndex = -1;
+	public void setPathMode(renderMode mode) {
+		if (mode == null) {
+			modeAddVertex    = false;
+			modeEditVertex   = false;
+			modeInsertVertex = false;
+			modeRemoveVertex = false;
+			curVertexIndex   = -1;
+			leftVertexIndex  = -1;
+			rightVertexIndex = -1;
+			return;
 		}
-	}
-	
-	public boolean checkCanInsertVertex() {
-		return (!modeAddVertex && !modeEditVertex && !modeRemoveVertex);
-	}
-	
-	public void changeInsertVertexMode() {
-		modeInsertVertex = !modeInsertVertex;
-		leftVertexIndex  = -1;
-		rightVertexIndex = -1;
-	}
-	
-	public boolean checkCanRemoveVertex() {
-		return (!modeAddVertex && !modeEditVertex && !modeInsertVertex);
-	}
-	
-	public void changeRemoveVertexMode() {
-		modeRemoveVertex = !modeRemoveVertex;
+		switch (mode) {
+			case ADD: {
+				modeAddVertex = !modeAddVertex;
+				modeEditVertex   = false;
+				modeInsertVertex = false;
+				modeRemoveVertex = false;
+				curVertexIndex   = -1;
+				leftVertexIndex  = -1;
+				rightVertexIndex = -1;
+				break;
+			}
+			case EDIT: {
+				modeEditVertex = !modeEditVertex;
+				if (!modeEditVertex) {
+					curVertexIndex = -1;
+				}
+				modeAddVertex    = false;
+				modeInsertVertex = false;
+				modeRemoveVertex = false;
+				leftVertexIndex  = -1;
+				rightVertexIndex = -1;
+				break;
+			}
+			case INSERT: {
+				modeInsertVertex = !modeInsertVertex;
+				modeAddVertex    = false;
+				modeEditVertex   = false;
+				modeRemoveVertex = false;
+				curVertexIndex   = -1;
+				leftVertexIndex  = -1;
+				rightVertexIndex = -1;
+				break;
+			}
+			case REMOVE: {
+				modeRemoveVertex = !modeRemoveVertex;
+				modeAddVertex    = false;
+				modeEditVertex   = false;
+				modeInsertVertex = false;
+				curVertexIndex   = -1;
+				leftVertexIndex  = -1;
+				rightVertexIndex = -1;
+				break;
+			}
+		}
 	}
 }
