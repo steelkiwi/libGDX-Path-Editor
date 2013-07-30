@@ -4,9 +4,11 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.steelkiwi.patheditor.gdx.SplineBuilder.renderMode;
+import com.steelkiwi.patheditor.gui.IProjectHandler;
 import com.steelkiwi.patheditor.gui.IUIHandler;
 import com.steelkiwi.patheditor.proj.ScreenData;
 import com.steelkiwi.patheditor.widgets.GdxImage;
+import com.steelkiwi.patheditor.widgets.GdxPath;
 
 public class GdxApp implements ApplicationListener, IScreenStructureChangeListener {
 	
@@ -56,7 +58,7 @@ public class GdxApp implements ApplicationListener, IScreenStructureChangeListen
 		uiHandler = null;
 	}
 	
-	public void setScreen(ScreenData scrData, int canvasW, int canvasH) {
+	public void setScreen(ScreenData scrData, int canvasW, int canvasH, IProjectHandler handler, int screenIndex) {
 		if (this.screen != null) {
 	        this.screen.pause();
 	        this.screen.dispose();
@@ -69,6 +71,7 @@ public class GdxApp implements ApplicationListener, IScreenStructureChangeListen
 		
 		this.screen = new GdxScreen(this, scrData.getWidth(), scrData.getHeight(), canvasW, canvasH);
 		((GdxScreen)this.screen).setBGImage(scrData.getBgImage());
+		((GdxScreen)this.screen).setPath(scrData.getPath(), handler, screenIndex);
     }
 	
 	public Screen getCurScreen() {
@@ -93,8 +96,14 @@ public class GdxApp implements ApplicationListener, IScreenStructureChangeListen
 	}
 
 	@Override
-	public void onAddPath(int pointsCnt, String controlColor, String segmentColor, String selectColor) {
-		if (screen != null) { screen.onAddPath(pointsCnt, controlColor, segmentColor, selectColor); }
+	public void onAddPath(String name, int pointsCnt, String controlColor, String segmentColor, String selectColor, IProjectHandler handler, int screenIndex) {
+		if (screen != null) { screen.onAddPath(name, pointsCnt, controlColor, segmentColor, selectColor, handler, screenIndex); }
+	}
+
+	@Override
+	public GdxPath getPath() {
+		if (screen != null) { return screen.getPath(); }
+		return null;
 	}
 
 	@Override

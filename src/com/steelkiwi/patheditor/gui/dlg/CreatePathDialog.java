@@ -19,6 +19,7 @@ import javax.swing.LayoutStyle;
 import javax.swing.WindowConstants;
 
 import com.steelkiwi.patheditor.consts.MsgConsts;
+import com.steelkiwi.patheditor.utils.ColorUtils;
 
 public class CreatePathDialog extends JDialog {
 	private static final long serialVersionUID = 6647166676498170997L;
@@ -62,13 +63,12 @@ public class CreatePathDialog extends JDialog {
 		controlColorTextField.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				Color initColor = hexToColor(controlColorTextField.getText());
+				Color initColor = ColorUtils.hexToColor(controlColorTextField.getText());
 				Color controlColor = JColorChooser.showDialog(CreatePathDialog.this, MsgConsts.COLOR_CONTROL_TITLE, initColor);
 				if (controlColor != null) {
-					controlColorTextField.setText(colorToHex(controlColor));
+					controlColorTextField.setText(ColorUtils.colorToHex(controlColor));
 				}
 			}
-			
 		});
 		
 		segmentColorLbl = new JLabel();
@@ -79,13 +79,12 @@ public class CreatePathDialog extends JDialog {
 	    segmentColorTextField.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				Color initColor = hexToColor(segmentColorTextField.getText());
+				Color initColor = ColorUtils.hexToColor(segmentColorTextField.getText());
 				Color controlColor = JColorChooser.showDialog(CreatePathDialog.this, MsgConsts.COLOR_SEGMENT_TITLE, initColor);
 				if (controlColor != null) {
-					segmentColorTextField.setText(colorToHex(controlColor));
+					segmentColorTextField.setText(ColorUtils.colorToHex(controlColor));
 				}
 			}
-			
 		});
 	    
 	    selectColorLbl = new JLabel();
@@ -96,13 +95,12 @@ public class CreatePathDialog extends JDialog {
 	    selectColorTextField.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				Color initColor = hexToColor(selectColorTextField.getText());
+				Color initColor = ColorUtils.hexToColor(selectColorTextField.getText());
 				Color controlColor = JColorChooser.showDialog(CreatePathDialog.this, MsgConsts.COLOR_SELECT_TITLE, initColor);
 				if (controlColor != null) {
-					selectColorTextField.setText(colorToHex(controlColor));
+					selectColorTextField.setText(ColorUtils.colorToHex(controlColor));
 				}
 			}
-			
 		});
 	    
 	    jSeparator1 = new JSeparator();
@@ -204,15 +202,6 @@ public class CreatePathDialog extends JDialog {
 	    );
 	
 	    pack();
-    }
-    
-    private static Color hexToColor(String hexString) {
-    	return Color.decode(hexString);
-    }
-    
-    private static String colorToHex(Color color) { 
-    	String rgb = Integer.toHexString(color.getRGB()); 
-    	return "#" + rgb.substring(2, rgb.length()); 
     }
     
     public interface ICreatePathHandler {

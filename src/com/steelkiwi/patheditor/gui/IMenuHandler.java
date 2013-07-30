@@ -124,7 +124,7 @@ public class IMenuHandler implements ActionListener, ITreeHandler {
 				break;
 			}
 			case PATH: {
-				//TODO
+				rootPane.onLeafSwitched((String)data.getData(), path);
 				break;
 			}
 		}

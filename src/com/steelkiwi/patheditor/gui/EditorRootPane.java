@@ -8,6 +8,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -30,14 +31,17 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import com.badlogic.gdx.math.Vector3;
 import com.steelkiwi.patheditor.consts.MenuConsts;
 import com.steelkiwi.patheditor.consts.MenuConsts.TREE_NODE_TYPE;
 import com.steelkiwi.patheditor.consts.MsgConsts;
 import com.steelkiwi.patheditor.gdx.SplineBuilder.renderMode;
+import com.steelkiwi.patheditor.path.Path;
 import com.steelkiwi.patheditor.proj.ProjectData;
 import com.steelkiwi.patheditor.proj.ProjectDataConverter;
 import com.steelkiwi.patheditor.proj.ScreenData;
 import com.steelkiwi.patheditor.widgets.GdxImage;
+import com.steelkiwi.patheditor.widgets.GdxPath;
 
 public class EditorRootPane extends JFrame implements IProjectHandler {
 	private static final long serialVersionUID = -3021481019247627930L;
@@ -218,7 +222,7 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		if (!saveCurrentProject()) { return; }
 		
 		projectData = null;
-		glPanel.getGdxApp().setScreen(null, glPanel.getCanvasWidth(), glPanel.getCanvasHeight());
+		glPanel.getGdxApp().setScreen(null, glPanel.getCanvasWidth(), glPanel.getCanvasHeight(), this, -1);
 		
 		noProjectMenuBarState();
 		noProjectToolBarState();
@@ -232,27 +236,26 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 	@Override
 	public void onScreenAdded(String name, int w, int h) {
 		createScreenData(name, w, h);
-		setScreen(projectData.getScreens().get(projectData.getScreens().size()-1));
-		
+		addTreeNode(projectData.getScreens().get(projectData.getScreens().size()-1));
 		screenCreatedMenuBarState();
 		screenCreatedToolBarState();
-		addTreeNode(projectData.getScreens().get(projectData.getScreens().size()-1));
+		setScreen(projectData.getScreens().get(projectData.getScreens().size()-1));
 	}
 	
 	@Override
 	public void onScreenSwitched(ScreenData scrData, TreePath path) {
-		setScreen(scrData);
 		selectTreeNode(path);
+		setScreen(scrData);
 	}
 	
 	private void setScreen(ScreenData scrData) {
-		glPanel.getGdxApp().setScreen(scrData, glPanel.getCanvasWidth(), glPanel.getCanvasHeight());
+		glPanel.getGdxApp().setScreen(scrData, glPanel.getCanvasWidth(), glPanel.getCanvasHeight(), this, getSelectedNodeIndex(getSelectedNode()));
 	}
 	
 	@Override
 	public void onRootSwitched() {
-		glPanel.getGdxApp().setScreen(null, glPanel.getCanvasWidth(), glPanel.getCanvasHeight());
 		selectRoot();
+		glPanel.getGdxApp().setScreen(null, glPanel.getCanvasWidth(), glPanel.getCanvasHeight(), this, -1);
 	}
 	
 	// ==============================================================
@@ -264,30 +267,64 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		glPanel.getGdxApp().onAddBGTexture(name, path, scaleCoef);
 		createBGImageData(glPanel.getGdxApp().getBGImage(), getSelectedNodeIndex(getSelectedNode()));
 		
-		if (getSelectedNode().getChildCount() <= 0) { //TODO add leaf types: bg, path
-			addTreeLeaf(getSelectedNode(), name);
+		if (screenHasBGImage()) {
+			updateTreeLeaf(getSelectedNode(), name, TREE_NODE_TYPE.BG);
 		}
 		else {
-			updateTreeLeaf(getSelectedNode(), name);
+			addTreeLeaf(getSelectedNode(), name, TREE_NODE_TYPE.BG);
 		}
 	}
 
 	@Override
 	public void onLeafSwitched(String name, TreePath path) {
+		selectTreeNode(path);
 		ScreenData scrData = getNodeScreenData(getLeafParentNode(path));
 		setScreen(scrData);
-		selectTreeNode(path);
+	}
+	
+	private boolean screenHasBGImage() {
+		DefaultMutableTreeNode node;
+		NodeData data;
+		boolean hasBG = false;
+		for (int i=0; i<getSelectedNode().getChildCount(); i++) {
+			node = (DefaultMutableTreeNode) getSelectedNode().getChildAt(i);
+			data = (NodeData) node.getUserObject();
+			if (data.getType().equals(TREE_NODE_TYPE.BG)) {
+				hasBG = true;
+			}
+		}
+		return hasBG;
 	}
 	
 	// ==============================================================
 	// path
 	// ==============================================================
-	
+
 	@Override
 	public void onPathCreate(String name, int pointsCnt, String controlColor, String segmentColor, String selectColor) {
-		glPanel.getGdxApp().onAddPath(pointsCnt, controlColor, segmentColor, selectColor);
+		glPanel.getGdxApp().onAddPath(name, pointsCnt, controlColor, segmentColor, selectColor, this, getSelectedNodeIndex(getSelectedNode()));
+		createPathData(glPanel.getGdxApp().getPath(), getSelectedNodeIndex(getSelectedNode()));
 		
-		//TODO create path data and add to current screen data, add tree leaf
+		if (screenHasPath()) {
+			updateTreeLeaf(getSelectedNode(), name, TREE_NODE_TYPE.PATH);
+		}
+		else {
+			addTreeLeaf(getSelectedNode(), name, TREE_NODE_TYPE.PATH);
+		}
+	}
+	
+	private boolean screenHasPath() {
+		DefaultMutableTreeNode node;
+		NodeData data;
+		boolean hasPath = false;
+		for (int i=0; i<getSelectedNode().getChildCount(); i++) {
+			node = (DefaultMutableTreeNode) getSelectedNode().getChildAt(i);
+			data = (NodeData) node.getUserObject();
+			if (data.getType().equals(TREE_NODE_TYPE.PATH)) {
+				hasPath = true;
+			}
+		}
+		return hasPath;
 	}
 	
 	@Override
@@ -310,12 +347,6 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 
 		glPanel.getGdxApp().setPathMode(renderMode.ADD);
 	}
-
-	//TODO init only add point is enabled, others are enabled if there is a path
-	//when clear path is clicked -> disable all except add
-	//when remove point is clicked and no more points left -> disable all except add
-	//when path is empty (init or after cleaning/removing) before creating it ask to change settings -> show createpathdialog 
-	//save/load path to json/xml
 	
 	@Override
 	public void onPathVertexEdit() {
@@ -393,6 +424,11 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		
 		glPanel.getGdxApp().onClearPath();
 		glPanel.getGdxApp().setPathMode(null);
+	}
+
+	@Override
+	public void onPathUpdated(int screenIndex, ArrayList<Vector3> controlPath, Path path) {
+		updatePathData(screenIndex, controlPath, path);
 	}
 	
 	// ==============================================================
@@ -720,13 +756,13 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		projectTree.setSelectionRow(projectTree.getRowCount()-1);
 	}
 	
-	private void addTreeLeaf(DefaultMutableTreeNode node, String name) {
+	private void addTreeLeaf(DefaultMutableTreeNode node, String name, TREE_NODE_TYPE type) {
 		DefaultMutableTreeNode root = getTreeRoot();
 		if (root == null) { return; }
 		if (node == null) { return; }
 		
 		NodeData data = new NodeData();
-		data.setType(TREE_NODE_TYPE.BG);
+		data.setType(type);
 		data.setData(name);
 		
 		node.add(new DefaultMutableTreeNode(data));
@@ -736,12 +772,13 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		projectTree.setSelectionRow(1 + root.getIndex(node) + node.getChildCount());
 	}
 	
-	private void updateTreeLeaf(DefaultMutableTreeNode node, String name) {
+	private void updateTreeLeaf(DefaultMutableTreeNode node, String name, TREE_NODE_TYPE type) {
 		DefaultMutableTreeNode root = getTreeRoot();
 		if (root == null) { return; }
 		if (node == null) { return; }
 		
 		NodeData data = (NodeData)((DefaultMutableTreeNode) node.getChildAt(0)).getUserObject();
+		if (!data.getType().equals(type)) { return; }
 		data.setData(name);
 		
 		((DefaultMutableTreeNode) node.getChildAt(0)).setUserObject(data);
@@ -760,10 +797,15 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 	private void loadProjectTree() {
 		createProjectTree();
 		if (projectData.hasScreens()) {
+			DefaultMutableTreeNode node;
 			for (int i=0; i<projectData.getScreens().size(); i++) {
 				addTreeNode(projectData.getScreens().get(i));
+				node = getSelectedNode();
 				if (projectData.getScreens().get(i).getBgImage() != null) {
-					addTreeLeaf(getSelectedNode(), projectData.getScreens().get(i).getBgImage().name);
+					addTreeLeaf(node, projectData.getScreens().get(i).getBgImage().name, TREE_NODE_TYPE.BG);
+				}
+				if (projectData.getScreens().get(i).getPath() != null) {
+					addTreeLeaf(node, projectData.getScreens().get(i).getPath().getName(), TREE_NODE_TYPE.PATH);
 				}
 			}
 		}
@@ -847,6 +889,32 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		if ((screenIndex < 0) || (screenIndex >= projectData.getScreens().size())) { return; }
 		
 		projectData.getScreens().get(screenIndex).setBgImage(bgImage);
+	}
+	
+	private void createPathData(GdxPath path, int screenIndex) {
+		if (projectData == null) { return; }
+		if (projectData.getScreens() == null) { return; }
+		if ((screenIndex < 0) || (screenIndex >= projectData.getScreens().size())) { return; }
+		
+		if (path != null) {
+			path.setXmlPath(ProjectDataConverter.genPathXMLPath(ProjectDataConverter.getScreenDir(projectData.getScreens().get(screenIndex).getXmlPath()), path.getName()));
+			path.setJsonPath(ProjectDataConverter.genPathJSONPath(ProjectDataConverter.getScreenDir(projectData.getScreens().get(screenIndex).getJsonPath()), path.getName()));
+		}
+		
+		projectData.getScreens().get(screenIndex).setPath(path);
+	}
+	
+	private void updatePathData(int screenIndex, ArrayList<Vector3> controlPath, Path path) {
+		if (projectData == null) { return; }
+		if (projectData.getScreens() == null) { return; }
+		if ((screenIndex < 0) || (screenIndex >= projectData.getScreens().size())) { return; }
+		if (screenIndex != getSelectedNodeIndex(getSelectedNode())) { return; }
+		
+		GdxPath gdxPath = projectData.getScreens().get(screenIndex).getPath();
+		if (gdxPath != null) {
+			gdxPath.setControlPath(controlPath);
+			gdxPath.setPath(path);
+		}
 	}
 	
 	// ==============================================================

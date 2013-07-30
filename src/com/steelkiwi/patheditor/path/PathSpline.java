@@ -67,8 +67,7 @@ public class PathSpline {
 		}
 		if (getSplineControlVerticesCount() < SPLINE_MIN_VERTICES_COUNT) { return; }
 		
-		//generate all vertices
-		//(getSplineControlVerticesCount() - 2) cause spline creation needs two extra points
+		//generate all vertices (tip: spline creation needs two extra points)
 		if (totalVertices != null) { totalVertices = null; }
         totalVertices = new Vector3[(((getSplineControlVerticesCount() - 2) - 1) * (segmentPointsCount + 2)) - ((getSplineControlVerticesCount() - 2) - 2)]; 
         for (int i=0; i<getSplineVerticesCount(); i++) {
@@ -76,10 +75,9 @@ public class PathSpline {
         }
         spline.getPath(totalVertices, segmentPointsCount);
         
-        //get tangent normals for all vertices
-        //getSplineVerticesCount() = tangentsNormal.size() + 1
+        //get tangent normals for all vertices (+1 to get tangent normal for the last path vertex)
         if (tangentsNormal != null) { tangentsNormal.clear(); tangentsNormal = null; } 
-        tangentsNormal = (ArrayList<Vector3>) spline.getTangentNormals2D(segmentPointsCount);
+        tangentsNormal = (ArrayList<Vector3>) spline.getTangentNormals2D(segmentPointsCount+1);
 	}
 
 	public int getNearestSplineControlVertexIndex(float x, float y) {
@@ -202,5 +200,20 @@ public class PathSpline {
     	if (tangentsNormal != null) {
     		tangentsNormal.clear();
     	}
+    }
+    
+    public void setSplineControlVertices(ArrayList<Vector3> controlVertices) {
+    	if (this.controlVertices != null) {
+			this.controlVertices.clear();
+			this.controlVertices = null;
+		}
+		if (controlVertices == null) { return; }
+		this.controlVertices = new ArrayList<Vector3>();
+		Vector3 v;
+		for (int i=0; i<controlVertices.size(); i++) {
+			v = controlVertices.get(i);
+			this.controlVertices.add(new Vector3(v.x, v.y, 0f));
+		}
+    	updateSpline();
     }
 }

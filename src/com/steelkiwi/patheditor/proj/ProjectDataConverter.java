@@ -7,8 +7,10 @@ import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
@@ -18,7 +20,10 @@ import com.badlogic.gdx.utils.XmlReader;
 import com.badlogic.gdx.utils.XmlReader.Element;
 import com.badlogic.gdx.utils.XmlWriter;
 import com.steelkiwi.patheditor.gui.dlg.CreateImageDialog.widgetType;
+import com.steelkiwi.patheditor.path.Path;
+import com.steelkiwi.patheditor.path.PathVertex;
 import com.steelkiwi.patheditor.widgets.GdxImage;
+import com.steelkiwi.patheditor.widgets.GdxPath;
 import com.steelkiwi.patheditor.widgets.WidgetManager;
 
 public class ProjectDataConverter {
@@ -102,10 +107,15 @@ public class ProjectDataConverter {
 	}
 
 	private static void saveScreens(ProjectData projData) throws Exception {
+		ScreenData scrData;
 		for (int i=0; i<projData.getScreens().size(); i++) {
-			createScreenDir(projData.getPath(), projData.getScreens().get(i).getName());
-			saveScreenToXML(projData.getScreens().get(i), projData.getPath());
-			saveScreenToJSON(projData.getScreens().get(i), projData.getPath());
+			scrData = projData.getScreens().get(i);
+			createScreenDir(projData.getPath(), scrData.getName());
+			saveScreenToXML(scrData, projData.getPath());
+			saveScreenToJSON(scrData, projData.getPath());
+			if ((scrData.getPath() != null) && (scrData.getPath().getPath() != null)) {
+				savePath(scrData);
+			}
 		}
 	}
 	
@@ -138,7 +148,7 @@ public class ProjectDataConverter {
 		xmlWriter.element("xmlPath",  scrData.getXmlPath());
 		xmlWriter.element("jsonPath", scrData.getJsonPath());
 		
-		if ((scrData.getBgImage() != null)) {
+		if (scrData.getBgImage() != null) {
 			xmlWriter.element("bg")
 					 	.element("name",        scrData.getBgImage().name)
 					 	.element("type",        (getWidgetType(scrData.getBgImage()) != null) ? getWidgetType(scrData.getBgImage()).ordinal() : -1)
@@ -149,6 +159,13 @@ public class ProjectDataConverter {
 					 	.element("y",           scrData.getBgImage().y)
 					 	.element("angle",       scrData.getBgImage().rotation)
 					 .pop();
+		}
+		
+		if ((scrData.getPath() != null) && (scrData.getPath().getPath() != null)) {
+			xmlWriter.element("path")
+			 	.element("xmlPath",  scrData.getPath().getXmlPath())
+			 	.element("jsonPath", scrData.getPath().getJsonPath())
+			 .pop();
 		}
 		
 		xmlWriter.pop();
@@ -187,6 +204,147 @@ public class ProjectDataConverter {
 						.set("y",           scrData.getBgImage().y)
 						.set("angle",       scrData.getBgImage().rotation)
 					  .pop();
+		}
+		
+		if ((scrData.getPath() != null) && (scrData.getPath().getPath() != null)) {
+			jsonWriter.object("path")
+			 	.set("xmlPath",  scrData.getPath().getXmlPath())
+			 	.set("jsonPath", scrData.getPath().getJsonPath())
+			 .pop();
+		}
+		
+		jsonWriter.pop();
+		jsonWriter.pop();
+		jsonWriter.close();
+		
+		FileWriter writer = new FileWriter(new File(path));
+		writer.write(strWriter.toString());
+		writer.close();
+	}
+	
+	private static void savePath(ScreenData scrData) throws Exception {
+		if ((scrData.getPath() != null) && (scrData.getPath().getPath() != null)) {
+			createPathDir(getScreenDir(scrData.getXmlPath()), "path");
+			savePathToXml(scrData.getPath());
+			savePathToJSON(scrData.getPath());
+		}
+	}
+	
+	private static void createPathDir(String scrPath, String pathDirName) {
+		String dir = scrPath + PATH_SEPARATOR + pathDirName;
+		File scrDir = new File(dir);
+		if (!scrDir.exists()) {
+			scrDir.mkdir();
+		} else if (!scrDir.isDirectory()) {
+			scrDir.delete();
+			scrDir.mkdir();
+		}
+	}
+	
+	private static void savePathToXml(GdxPath gdxPath) throws Exception {
+		String path = gdxPath.getXmlPath();
+		File pathFile = new File(path);
+		
+		if (pathFile.exists()) { pathFile.delete(); }
+		pathFile.createNewFile();
+			
+		StringWriter strWriter = new StringWriter();
+		XmlWriter xmlWriter = new XmlWriter(strWriter);
+		
+		xmlWriter.element("path");
+		
+		xmlWriter.element("name",         gdxPath.getName());
+		xmlWriter.element("pointsCnt",    gdxPath.getPointsCnt());
+		xmlWriter.element("controlColor", gdxPath.getControlColor());
+		xmlWriter.element("segmentColor", gdxPath.getSegmentColor());
+		xmlWriter.element("selectColor",  gdxPath.getSelectColor());
+		
+		xmlWriter.element("xmlPath",  gdxPath.getXmlPath());
+		xmlWriter.element("jsonPath", gdxPath.getJsonPath());
+		
+		if ((gdxPath.getPath() != null) && (gdxPath.getPath().getPathVerticesCount() > 0)) {
+			xmlWriter.element("controlVertices");
+			Vector3 controlVertex;
+			for (int i=0; i<gdxPath.getControlPath().size(); i++) {
+				controlVertex = gdxPath.getControlPath().get(i);
+				xmlWriter.element("controlVertex")
+			 			 	.element("id", i)
+			 			 	.element("x",  controlVertex.x)	
+			 			 	.element("y",  controlVertex.y)
+			 			 .pop();	
+			}
+			xmlWriter.pop();
+			
+			xmlWriter.element("vertices");
+			PathVertex vertex;
+			for (int i=0; i<gdxPath.getPath().getPathVerticesCount(); i++) {
+				vertex = gdxPath.getPath().getPathVertexByIndex(i);
+				xmlWriter.element("vertex")
+			 			 	.element("id",    i)
+			 			 	.element("x",     vertex.getPosition().x)	
+			 			 	.element("y",     vertex.getPosition().y)
+			 			 	.element("tanX",  vertex.getTangentNornal().x)	
+			 			 	.element("tanY",  vertex.getTangentNornal().y)
+			 			 	.element("angle", vertex.getAngle())
+			 			 .pop();	
+			}
+			xmlWriter.pop();
+		}
+		
+		xmlWriter.pop();
+		xmlWriter.close();
+		
+		FileWriter writer = new FileWriter(new File(path));
+		writer.write(strWriter.toString());
+		writer.close();
+	}
+	
+	private static void savePathToJSON(GdxPath gdxPath) throws Exception {
+		String path = gdxPath.getJsonPath();
+		File pathFile = new File(path);
+		
+		if (pathFile.exists()) { pathFile.delete(); }
+		pathFile.createNewFile();
+		
+		StringWriter strWriter = new StringWriter();
+		JsonWriter jsonWriter = new JsonWriter(strWriter);
+		jsonWriter.object()
+					.object("path")
+						.set("name",     	 gdxPath.getName())
+						.set("pointsCnt",    gdxPath.getPointsCnt())
+						.set("controlColor", gdxPath.getControlColor())
+						.set("segmentColor", gdxPath.getSegmentColor())
+						.set("selectColor",  gdxPath.getSelectColor())
+						.set("xmlPath", 	 gdxPath.getXmlPath())
+						.set("jsonPath", 	 gdxPath.getJsonPath());
+		
+		if ((gdxPath.getPath() != null) && (gdxPath.getPath().getPathVerticesCount() > 0)) {
+			jsonWriter.array("controlVertices");
+			Vector3 controlVertex;
+			for (int i=0; i<gdxPath.getControlPath().size(); i++) {
+				controlVertex = gdxPath.getControlPath().get(i);
+				jsonWriter.object()
+							.set("id", i)
+							.set("x",  controlVertex.x)
+							.set("y",  controlVertex.y)
+						  .pop();
+			}
+			jsonWriter.pop();
+
+			jsonWriter.array("vertices");
+			PathVertex vertex;
+			for (int i=0; i<gdxPath.getPath().getPathVerticesCount(); i++) {
+				vertex = gdxPath.getPath().getPathVertexByIndex(i);
+				jsonWriter.object()
+							.set("id",    i)
+							.set("x", 	  vertex.getPosition().x)
+							.set("y", 	  vertex.getPosition().y)
+							.set("tanX",  vertex.getTangentNornal().x)
+							.set("tanY",  vertex.getTangentNornal().y)
+							.set("angle", vertex.getAngle())
+						  .pop();
+			}
+			jsonWriter.pop();
 		}
 		
 		jsonWriter.pop();
@@ -265,16 +423,25 @@ public class ProjectDataConverter {
 		scrData.setJsonPath(json);
 		
 		Element bgRoot = xmlRoot.getChildByName("bg");
-		if (bgRoot == null) { return scrData; }
-		String bgName    = bgRoot.get("name", "");
-		String bgTexPath = bgRoot.get("texturePath", "");
-		float bgScaleX 	 = bgRoot.getFloat("scaleX", -1f);
-		float bgScaleY 	 = bgRoot.getFloat("scaleY", -1f);
-		float bgX 	     = bgRoot.getFloat("x", -1f);
-		float bgY 	     = bgRoot.getFloat("y", -1f);
-		float bgAngle 	 = bgRoot.getFloat("angle", -1f);
+		if (bgRoot != null) {
+			String bgName    = bgRoot.get("name", "");
+			String bgTexPath = bgRoot.get("texturePath", "");
+			float bgScaleX 	 = bgRoot.getFloat("scaleX", -1f);
+			float bgScaleY 	 = bgRoot.getFloat("scaleY", -1f);
+			float bgX 	     = bgRoot.getFloat("x", -1f);
+			float bgY 	     = bgRoot.getFloat("y", -1f);
+			float bgAngle 	 = bgRoot.getFloat("angle", -1f);
+			
+			scrData.setBgImage(WidgetManager.createBGImage(bgName, bgTexPath, bgScaleX, bgScaleY, bgX, bgY, bgAngle));
+		}
 		
-		scrData.setBgImage(WidgetManager.createBGImage(bgName, bgTexPath, bgScaleX, bgScaleY, bgX, bgY, bgAngle));
+		Element pathRoot = xmlRoot.getChildByName("path");
+		if (pathRoot != null) {
+			xml = pathRoot.get("xmlPath", "");
+			if (xml.length() > 0) {
+				scrData.setPath(getPathFromXML(xml));
+			}
+		}
 		
 		return scrData;
 	}
@@ -308,19 +475,149 @@ public class ProjectDataConverter {
 		scrData.setXmlPath(xml);
 		scrData.setJsonPath(json);
 		
-		if (screenData.get("bg") == null) { return scrData; }
-		OrderedMap<String, Object> bgData = (OrderedMap<String, Object>) screenData.get("bg");
-		String bgName    = (String) bgData.get("name");
-		String bgTexPath = (String) bgData.get("texturePath");
-		float bgScaleX 	 = (Float)  bgData.get("scaleX");
-		float bgScaleY 	 = (Float)  bgData.get("scaleY");
-		float bgX 	     = (Float)  bgData.get("x");
-		float bgY 	     = (Float)  bgData.get("y");
-		float bgAngle 	 = (Float)  bgData.get("angle");
+		if (screenData.get("bg") != null) {
+			OrderedMap<String, Object> bgData = (OrderedMap<String, Object>) screenData.get("bg");
+			String bgName    = (String) bgData.get("name");
+			String bgTexPath = (String) bgData.get("texturePath");
+			float bgScaleX 	 = (Float)  bgData.get("scaleX");
+			float bgScaleY 	 = (Float)  bgData.get("scaleY");
+			float bgX 	     = (Float)  bgData.get("x");
+			float bgY 	     = (Float)  bgData.get("y");
+			float bgAngle 	 = (Float)  bgData.get("angle");
+			
+			scrData.setBgImage(WidgetManager.createBGImage(bgName, bgTexPath, bgScaleX, bgScaleY, bgX, bgY, bgAngle));
+		}
 		
-		scrData.setBgImage(WidgetManager.createBGImage(bgName, bgTexPath, bgScaleX, bgScaleY, bgX, bgY, bgAngle));
+		if (screenData.get("path") != null) {
+			OrderedMap<String, Object> pathData = (OrderedMap<String, Object>) screenData.get("path");
+			json = (String) pathData.get("jsonPath");
+			if (xml.length() > 0) {
+				scrData.setPath(getPathFromJSON(json));
+			}
+		}
 		
 		return scrData;
+	}
+	
+	private static GdxPath getPathFromXML(String path) throws Exception {
+		File scrFile = new File(path);
+		if (!scrFile.exists()) { throw new Exception(); }
+		
+		File xmlFile = new File(path);
+		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(xmlFile), "utf8"));
+		
+		XmlReader xmlReader = new XmlReader();
+		Element xmlRoot = xmlReader.parse(br);
+		
+		String name		= xmlRoot.get("name", "");
+		int pointsCnt 	= xmlRoot.getInt("pointsCnt", -1);
+		String controlColor = xmlRoot.get("controlColor", "");
+		String segmentColor = xmlRoot.get("segmentColor", "");
+		String selectColor  = xmlRoot.get("selectColor", "");
+		String xml  = xmlRoot.get("xmlPath",  "");
+		String json = xmlRoot.get("jsonPath", "");
+		if ((name.length() <= 0) || (pointsCnt < 0) ||
+			(controlColor.length() <= 0) || (segmentColor.length() <= 0) || (selectColor.length() <= 0) ||
+			(xml.length() <= 0) || (json.length() <= 0)) { throw new Exception(); }
+		
+		GdxPath gdxPath = new GdxPath();
+		gdxPath.setName(name);
+		gdxPath.setPointsCnt(pointsCnt);
+		gdxPath.setControlColor(controlColor);
+		gdxPath.setSegmentColor(segmentColor);
+		gdxPath.setSelectColor(selectColor);
+		gdxPath.setXmlPath(xml);
+		gdxPath.setJsonPath(json);
+		
+		Element cvRoot = xmlRoot.getChildByName("controlVertices");
+		if (cvRoot == null) { throw new Exception(); }
+		
+		ArrayList<Vector3> controlVertices = new ArrayList<Vector3>();
+		Element cvertexRoot;
+		for (int i=0; i<cvRoot.getChildCount(); i++) {
+			cvertexRoot = cvRoot.getChild(i);
+			controlVertices.add(new Vector3(cvertexRoot.getFloat("x", 0f), cvertexRoot.getFloat("y", 0f), 0f));
+		}
+		gdxPath.setControlPath(controlVertices);
+		
+		Element vRoot = xmlRoot.getChildByName("vertices");
+		if (vRoot == null) { throw new Exception(); }
+		
+		Path vertices = new Path();
+		Element vertexRoot;
+		for (int i=0; i<vRoot.getChildCount(); i++) {
+			vertexRoot = vRoot.getChild(i);
+			vertices.addPathVertex(vertexRoot.getFloat("x", 0f),
+								   vertexRoot.getFloat("y", 0f),
+								   vertexRoot.getFloat("tanX", 0f),
+								   vertexRoot.getFloat("tanY", 0f));
+		}
+		gdxPath.setPath(vertices);
+		
+		return gdxPath;
+	}
+	
+	private static GdxPath getPathFromJSON(String path) throws Exception {
+		File scrFile = new File(path);
+		if (!scrFile.exists()) { throw new Exception(); }
+		
+		File xmlFile = new File(path);
+		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(xmlFile), "utf8"));
+		
+		JsonReader jsonReader = new JsonReader();
+		OrderedMap<String, Object> jsonData = (OrderedMap<String, Object>) jsonReader.parse(br);
+		
+		if (jsonData.get("path") == null) { throw new Exception(); }
+		OrderedMap<String, Object> pathData = (OrderedMap<String, Object>) jsonData.get("path");
+		
+		String name   = (String) pathData.get("name");
+		int pointsCnt = Math.round((Float) pathData.get("pointsCnt"));
+		String controlColor = (String) pathData.get("controlColor");
+		String segmentColor = (String) pathData.get("segmentColor");
+		String selectColor  = (String) pathData.get("selectColor");
+		String xml  = (String) pathData.get("xmlPath");
+		String json = (String) pathData.get("jsonPath");
+		if ((name.length() <= 0) || (pointsCnt < 0) ||
+			(controlColor.length() <= 0) || (segmentColor.length() <= 0) || (selectColor.length() <= 0) ||
+			(xml.length() <= 0) || (json.length() <= 0)) { throw new Exception(); }
+		
+		GdxPath gdxPath = new GdxPath();
+		gdxPath.setName(name);
+		gdxPath.setPointsCnt(pointsCnt);
+		gdxPath.setControlColor(controlColor);
+		gdxPath.setSegmentColor(segmentColor);
+		gdxPath.setSelectColor(selectColor);
+		gdxPath.setXmlPath(xml);
+		gdxPath.setJsonPath(json);
+		
+		if (pathData.get("controlVertices") != null) {
+			Array<OrderedMap<String, Object>> controlVerticesData = (Array<OrderedMap<String, Object>>) pathData.get("controlVertices");
+			ArrayList<Vector3> controlVertices = new ArrayList<Vector3>();
+			OrderedMap<String, Object> cvertexData;
+			for (int i=0; i<controlVerticesData.size; i++) {
+				cvertexData = controlVerticesData.get(i);
+				controlVertices.add(new Vector3((Float) cvertexData.get("x"), (Float) cvertexData.get("y"), 0f));
+			}
+			gdxPath.setControlPath(controlVertices);
+		}
+		else { throw new Exception(); }
+		
+		if (pathData.get("vertices") != null) {
+			Array<OrderedMap<String, Object>> verticesData = (Array<OrderedMap<String, Object>>) pathData.get("vertices");
+			Path vertices = new Path();
+			OrderedMap<String, Object> vertexData;
+			for (int i=0; i<verticesData.size; i++) {
+				vertexData = verticesData.get(i);
+				vertices.addPathVertex((Float) vertexData.get("x"),
+									   (Float) vertexData.get("y"),
+									   (Float) vertexData.get("tanX"),
+									   (Float) vertexData.get("tanY"));
+			}
+			gdxPath.setPath(vertices);
+		}
+		else { throw new Exception(); }
+		
+		return gdxPath;
 	}
 	
 	// ==============================================================
@@ -348,6 +645,19 @@ public class ProjectDataConverter {
 	
 	public static String genScreenJSONPath(String projPath, String screenName) {
 		return String.format("%s%s%s%s%s.json", projPath, PATH_SEPARATOR, screenName, PATH_SEPARATOR, screenName);
+	}
+	
+	public static String genPathXMLPath(String screenPath, String pathName) {
+		return String.format("%s%s%s%s%s.xml", screenPath, PATH_SEPARATOR, "path", PATH_SEPARATOR, pathName);
+	}
+	
+	public static String genPathJSONPath(String screenPath, String pathName) {
+		return String.format("%s%s%s%s%s.json", screenPath, PATH_SEPARATOR, "path", PATH_SEPARATOR, pathName);
+	}
+	
+	public static String getScreenDir(String screenPath) {
+		int sepPos = screenPath.lastIndexOf(PATH_SEPARATOR);
+		return screenPath.substring(0, sepPos);
 	}
 	
 	private static widgetType getWidgetType(Actor a) {

@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Matrix4;
 import com.steelkiwi.patheditor.gdx.SplineBuilder.renderMode;
 import com.steelkiwi.patheditor.path.PathSpline;
+import com.steelkiwi.patheditor.utils.ColorUtils;
 
 public class SplineRenderer {
 	private PathSpline spline;
@@ -37,5 +38,20 @@ public class SplineRenderer {
 	public void dispose() {
 		spline = null;
 		if (renderer != null) { renderer.dispose(); renderer = null; }
+	}
+
+	public String getControlColor() {
+		java.awt.Color tempControlColor = new java.awt.Color(controlColor.r, controlColor.g, controlColor.b);
+		return ColorUtils.colorToHex(tempControlColor);
+	}
+
+	public String getSegmentColor() {
+		java.awt.Color tempSegmentColor = new java.awt.Color(segmentColor.r, segmentColor.g, segmentColor.b);
+		return ColorUtils.colorToHex(tempSegmentColor);
+	}
+
+	public String getSelectColor() {
+		java.awt.Color tempSelectColor = new java.awt.Color(selectColor.r, selectColor.g, selectColor.b);
+		return ColorUtils.colorToHex(tempSelectColor);
 	}
 }

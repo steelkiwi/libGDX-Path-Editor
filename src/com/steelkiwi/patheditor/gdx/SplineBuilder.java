@@ -1,20 +1,27 @@
 package com.steelkiwi.patheditor.gdx;
 
+import java.util.ArrayList;
+
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
+import com.steelkiwi.patheditor.gui.IProjectHandler;
 import com.steelkiwi.patheditor.path.Path;
 import com.steelkiwi.patheditor.path.PathSpline;
+import com.steelkiwi.patheditor.widgets.GdxPath;
 
 public class SplineBuilder {
-	private boolean modeAddVertex    = false;
-	private boolean modeEditVertex   = false;
-	private boolean modeInsertVertex = false;
-	private boolean modeRemoveVertex = false;
+	private int screenIndex;
+	private String pathName;
 	
 	private int curVertexIndex = -1;
 	//for insertion
 	private int leftVertexIndex  = -1;
 	private int rightVertexIndex = -1;
+	
+	private boolean modeAddVertex    = false;
+	private boolean modeEditVertex   = false;
+	private boolean modeInsertVertex = false;
+	private boolean modeRemoveVertex = false;
 	
 	public static enum renderMode { ADD, EDIT, INSERT, REMOVE };
 	private renderMode mode;
@@ -24,10 +31,15 @@ public class SplineBuilder {
 	
 	private Path resultPath;
 	
-	public SplineBuilder(int pointsCnt, String controlColor, String segmentColor, String selectColor) {
+	private IProjectHandler pathHandler;
+	
+	public SplineBuilder(String name, int pointsCnt, String controlColor, String segmentColor, String selectColor, IProjectHandler handler, int screenIndex) {
+		this.screenIndex = screenIndex;
+		pathName = name;
 		spline = new PathSpline();
 		spline.setSplineSegmentPointsCount(pointsCnt);
 		renderer = new SplineRenderer(spline, controlColor, segmentColor, selectColor);
+		pathHandler = handler;
 	}
 	
 	private void addSplineVertex(float x, float y) {
@@ -83,26 +95,21 @@ public class SplineBuilder {
         clearResultPath();
         resultPath = new Path();
         
-		boolean isCntrl = true;
-    	int c = -1;
-    	for (int i=0; i<spline.getSplineVerticesCount()-1; i++) {
+    	for (int i=0; i<spline.getSplineVerticesCount(); i++) {
     		resultPath.addPathVertex(spline.getSplineVertexByIndex(i).x,
 				    				 spline.getSplineVertexByIndex(i).y,
 				    				 spline.getSplineVertexTangentNormalByIndex(i).x,
-				    				 spline.getSplineVertexTangentNormalByIndex(i).y,
-				    				 isCntrl);
-      		isCntrl = false;
-      		c++;
-      		if (c == spline.getSplineSegmentVerticesCount()) {
-      			isCntrl = true;
-      			c = -1;
-      		}
+				    				 spline.getSplineVertexTangentNormalByIndex(i).y);
         }
+    	
+    	if (pathHandler != null) { pathHandler.onPathUpdated(screenIndex, spline.getSplineControlVertices(), resultPath); }
     }
 	
 	public void clearSpline() {
 		if (spline != null) { spline.clearSpline(); }
 		clearResultPath();
+		
+		if (pathHandler != null) { pathHandler.onPathUpdated(screenIndex, spline.getSplineControlVertices(), resultPath); }
 	}
 	
 	private void clearResultPath() {
@@ -116,6 +123,7 @@ public class SplineBuilder {
 	public void dispose() {
 		if (renderer != null) { renderer.dispose();   renderer = null; }
 		if (spline   != null) { spline.clearSpline(); spline = null;   }
+		pathHandler = null;
 	}
 
 	public boolean touchDown(float x, float y) {
@@ -213,5 +221,22 @@ public class SplineBuilder {
 				break;
 			}
 		}
+	}
+	
+	public GdxPath getPath() {
+		GdxPath path = new GdxPath();
+		path.setName((pathName != null && pathName.length() > 0) ? pathName : "path" + System.currentTimeMillis());
+		path.setPointsCnt((spline != null) ? spline.getSplineSegmentVerticesCount() : 0);
+		path.setControlColor((renderer != null) ? renderer.getControlColor() : "");
+		path.setSegmentColor((renderer != null) ? renderer.getSegmentColor() : "");
+		path.setSelectColor((renderer  != null) ? renderer.getSelectColor()  : "");
+		path.setControlPath((spline != null) ? spline.getSplineControlVertices() : null);
+		path.setPath(resultPath);
+		return path;
+	}
+	
+	public void restoreSpline(ArrayList<Vector3> controlVertices) {
+		spline.setSplineControlVertices(controlVertices);
+		createResultPath();
 	}
 }

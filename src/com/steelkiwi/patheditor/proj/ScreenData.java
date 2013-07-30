@@ -1,6 +1,7 @@
 package com.steelkiwi.patheditor.proj;
 
 import com.steelkiwi.patheditor.widgets.GdxImage;
+import com.steelkiwi.patheditor.widgets.GdxPath;
 
 public class ScreenData {
 	private String name;
@@ -11,6 +12,7 @@ public class ScreenData {
 	private String jsonPath;
 	
 	private GdxImage bgImage;
+	private GdxPath path;
 	
 	public String getName() {
 		return name;
@@ -58,6 +60,14 @@ public class ScreenData {
 
 	public void setBgImage(GdxImage bgImage) {
 		this.bgImage = bgImage;
+	}
+
+	public GdxPath getPath() {
+		return path;
+	}
+
+	public void setPath(GdxPath path) {
+		this.path = path;
 	}
 
 	@Override

@@ -6,11 +6,11 @@ public class Path {
 	private ArrayList<PathVertex> path;
 	
 	public Path() {
-		path = new ArrayList<PathVertex>();  //tip: path.size()+1=path.length (������ path ��� ���.���������� ��� spline.getPath())
+		path = new ArrayList<PathVertex>();
 	}
 	
-	public void addPathVertex(float pX, float pY, float tnX, float tnY, boolean isCntrl) {
-		path.add(new PathVertex(pX, pY, tnX, tnY, isCntrl));
+	public void addPathVertex(float pX, float pY, float tnX, float tnY) {
+		path.add(new PathVertex(pX, pY, tnX, tnY));
 	}
 	
 	public PathVertex getPathVertexByIndex(int index) {
@@ -43,47 +43,4 @@ public class Path {
 	public void clear() {
 		if (path != null) { path.clear(); path = null; }
 	}
-	
-/*	public void printPath(Spline spline) {
-		if (path == null) { return; }
-		
-		StringWriter strWriter = new StringWriter();
-		XmlWriter xmlWriter = new XmlWriter(strWriter);
-		try {
-			xmlWriter.element("path");
-			
-			ArrayList<Vector3> controlPoints = spline.getControlPoints();
-			
-			for (int i=0; i<controlPoints.size(); i++) {
-				xmlWriter.element("controlPoint")
-						 	 .element("id",    i)
-						 	 .element("x",     controlPoints.get(i).x)	
-						 	 .element("y",     controlPoints.get(i).y)
-					     .pop();									
-			}
-					
-			xmlWriter.element("pointCnt", spline.getIntermediatePointCnt());
-	
-			for (int i=0; i<path.size(); i++) {
-				xmlWriter.element("point")
-			 			 	.element("id",    i)
-			 			 	.element("x",     path.get(i).getPos().x)	
-			 			 	.element("y",     path.get(i).getPos().y)
-			 			 	.element("angle", path.get(i).getAngle())
-			 			 .pop();	
-			}
-			
-			xmlWriter.pop();
-			xmlWriter.close();
-		
-			FileHandle stream = Gdx.files.external("data/path.xml");
-			stream.writeString(strWriter.toString(), false);
-			
-			System.out.println("*** PATH STARTS ***");
-			System.out.println(strWriter.toString());
-			System.out.println("*** PATH ENDS ***");
-		} catch (IOException e) {
-			throw new GdxRuntimeException("Couldn't save path!", e);
-		}	 
-	}*/
 }

@@ -1,7 +1,11 @@
 package com.steelkiwi.patheditor.gui;
 
+import java.util.ArrayList;
+
 import javax.swing.tree.TreePath;
 
+import com.badlogic.gdx.math.Vector3;
+import com.steelkiwi.patheditor.path.Path;
 import com.steelkiwi.patheditor.proj.ScreenData;
 
 public interface IProjectHandler {
@@ -22,5 +26,6 @@ public interface IProjectHandler {
 	public void onPathVertexEdit();
 	public void onPathVertexInsert();
 	public void onPathVertexRemove();
+	public void onPathUpdated(int screenIndex, ArrayList<Vector3> controlPath, Path path);
 	public void onPathClear();
 }

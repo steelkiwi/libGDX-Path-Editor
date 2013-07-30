@@ -8,10 +8,11 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.steelkiwi.patheditor.gdx.SplineBuilder.renderMode;
+import com.steelkiwi.patheditor.gui.IProjectHandler;
 import com.steelkiwi.patheditor.widgets.GdxImage;
+import com.steelkiwi.patheditor.widgets.GdxPath;
 
 public class GdxScreen extends Screen implements IScreenStructureChangeListener {
-
 	private int screenW, screenH;
 	private Vector3 screenToStageCoords = new Vector3();
 	
@@ -123,12 +124,20 @@ public class GdxScreen extends Screen implements IScreenStructureChangeListener 
 	}
 	
 	@Override
-	public void onAddPath(int pointsCnt, String controlColor, String segmentColor, String selectColor) {
+	public void onAddPath(String name, int pointsCnt, String controlColor, String segmentColor, String selectColor, IProjectHandler handler, int screenIndex) {
 		if (splineBuilder == null) {
-			splineBuilder = new SplineBuilder(pointsCnt, controlColor, segmentColor, selectColor);
+			splineBuilder = new SplineBuilder(name, pointsCnt, controlColor, segmentColor, selectColor, handler, screenIndex);
 		}
 	}
 	
+	@Override
+	public GdxPath getPath() {
+		if (splineBuilder != null) {
+			return splineBuilder.getPath();
+		}
+		return null;
+	}
+
 	@Override
 	public void onClearPath() {
 		if (splineBuilder != null) {
@@ -149,6 +158,14 @@ public class GdxScreen extends Screen implements IScreenStructureChangeListener 
 		if (splineBuilder != null) {
 			splineBuilder.setPathMode(mode);
 		}
+	}
+	
+	public void setPath(GdxPath path, IProjectHandler handler, int screenIndex) {
+		if (path == null) { return; }
+		splineBuilder = new SplineBuilder(path.getName(), path.getPointsCnt(),
+										  path.getControlColor(), path.getSegmentColor(), path.getSelectColor(),
+										  handler, screenIndex);
+		splineBuilder.restoreSpline(path.getControlPath());
 	}
 	
 	// ==============================================================
