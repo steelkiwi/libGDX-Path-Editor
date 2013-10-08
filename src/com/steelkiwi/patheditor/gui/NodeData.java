@@ -22,7 +22,13 @@ public class NodeData {
 	
 	@Override
 	public String toString() {
-		if (data instanceof String)     { return (String) data; }
+		if (data instanceof String)     {
+			switch (type) {
+				case BG:   	return (String) data + " [image]";
+				case PATH:	return (String) data + " [path]";
+				default:  	return (String) data;
+			}
+		}
 		if (data instanceof ScreenData) { return ((ScreenData) data).getName(); }
 		return super.toString();
 	}

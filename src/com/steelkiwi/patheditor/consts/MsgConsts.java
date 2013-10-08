@@ -9,4 +9,8 @@ public class MsgConsts {
 	
 	public final static String NOT_A_TEXTURE = "Selected file is not a texture";
 	public final static String FILL_ALL_FIELDS = "Please, fill all fields";
+	
+	public final static String COLOR_CONTROL_TITLE = "Select color for path control vertices";
+	public final static String COLOR_SEGMENT_TITLE = "Select color for path segment control vertices";
+	public final static String COLOR_SELECT_TITLE  = "Select color for path selected control vertices";
 }

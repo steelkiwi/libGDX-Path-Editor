@@ -1,7 +1,11 @@
 package com.steelkiwi.patheditor.gui;
 
+import java.util.ArrayList;
+
 import javax.swing.tree.TreePath;
 
+import com.badlogic.gdx.math.Vector3;
+import com.steelkiwi.patheditor.path.Path;
 import com.steelkiwi.patheditor.proj.ScreenData;
 
 public interface IProjectHandler {
@@ -16,4 +20,12 @@ public interface IProjectHandler {
 	
 	public void onBGImageAdded(String name, String path, float scaleCoef);
 	public void onLeafSwitched(String name, TreePath path);
+	
+	public void onPathCreate(String name, int pointsCnt, String controlColor, String segmentColor, String selectColor);
+	public void onPathVertexAdd();
+	public void onPathVertexEdit();
+	public void onPathVertexInsert();
+	public void onPathVertexRemove();
+	public void onPathUpdated(int screenIndex, ArrayList<Vector3> controlPath, Path path);
+	public void onPathClear();
 }

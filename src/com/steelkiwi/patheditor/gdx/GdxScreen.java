@@ -7,10 +7,12 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.steelkiwi.patheditor.gdx.SplineBuilder.renderMode;
+import com.steelkiwi.patheditor.gui.IProjectHandler;
 import com.steelkiwi.patheditor.widgets.GdxImage;
+import com.steelkiwi.patheditor.widgets.GdxPath;
 
 public class GdxScreen extends Screen implements IScreenStructureChangeListener {
-
 	private int screenW, screenH;
 	private Vector3 screenToStageCoords = new Vector3();
 	
@@ -18,6 +20,7 @@ public class GdxScreen extends Screen implements IScreenStructureChangeListener 
 	private Stage stage;
 	private BGDrawer bgDrawer;
 	private GdxImage bgImage;
+	private SplineBuilder splineBuilder;
 	private InputMultiplexer inputMultiplexer;
 	
 	public GdxScreen(GdxApp gdxApp, int stageW, int stageH, int canvasW, int canvasH) {
@@ -59,6 +62,8 @@ public class GdxScreen extends Screen implements IScreenStructureChangeListener 
 								 (int)camera.position.x, (int)camera.position.y,
 								 (int)camera.viewportWidth, (int)camera.viewportHeight,
 								 stage.getSpriteBatch());
+		
+		if (splineBuilder != null) { splineBuilder.present(camera.combined); }
 	}
 
 	@Override
@@ -73,16 +78,17 @@ public class GdxScreen extends Screen implements IScreenStructureChangeListener 
 	@Override
 	public void dispose() {
 		bgImage = null;
-		camera = null;
-		if (bgDrawer != null) { bgDrawer.dispose(); bgDrawer = null; }
+		camera  = null;
+		if (bgDrawer         != null) { bgDrawer.dispose();       bgDrawer = null;         }
+		if (splineBuilder    != null) { splineBuilder.dispose();  splineBuilder = null;    }
 		if (inputMultiplexer != null) { inputMultiplexer.clear(); inputMultiplexer = null; }
-		if (stage != null) { stage.dispose(); stage = null; }
+		if (stage            != null) { stage.dispose();          stage = null;            }
 		screenToStageCoords = null;
 		gdxApp = null;
 	}
 	
 	// ==============================================================
-	// create screen elements
+	// create screen background
 	// ==============================================================
 
 	@Override
@@ -109,6 +115,60 @@ public class GdxScreen extends Screen implements IScreenStructureChangeListener 
 	}
 	
 	// ==============================================================
+	// create path
+	// ==============================================================
+	
+	@Override
+	public boolean isPathInit() {
+		return (splineBuilder != null);
+	}
+	
+	@Override
+	public void onAddPath(String name, int pointsCnt, String controlColor, String segmentColor, String selectColor, IProjectHandler handler, int screenIndex) {
+		if (splineBuilder == null) {
+			splineBuilder = new SplineBuilder(name, pointsCnt, controlColor, segmentColor, selectColor, handler, screenIndex);
+		}
+	}
+	
+	@Override
+	public GdxPath getPath() {
+		if (splineBuilder != null) {
+			return splineBuilder.getPath();
+		}
+		return null;
+	}
+
+	@Override
+	public void onClearPath() {
+		if (splineBuilder != null) {
+			splineBuilder.clearSpline();
+		}
+	}
+
+	@Override
+	public renderMode getPathMode() {
+		if (splineBuilder != null) {
+			return splineBuilder.getPathMode();
+		}
+		return null;
+	}
+	
+	@Override
+	public void setPathMode(renderMode mode) {
+		if (splineBuilder != null) {
+			splineBuilder.setPathMode(mode);
+		}
+	}
+	
+	public void setPath(GdxPath path, IProjectHandler handler, int screenIndex) {
+		if (path == null) { return; }
+		splineBuilder = new SplineBuilder(path.getName(), path.getPointsCnt(),
+										  path.getControlColor(), path.getSegmentColor(), path.getSelectColor(),
+										  handler, screenIndex);
+		splineBuilder.restoreSpline(path.getControlPath());
+	}
+	
+	// ==============================================================
 	// input handler
 	// ==============================================================
 
@@ -119,10 +179,15 @@ public class GdxScreen extends Screen implements IScreenStructureChangeListener 
 			camera.unproject(screenToStageCoords.set(screenX, screenY, 0));
 			System.out.println(String.format("stage touch down at (%f, %f)", screenToStageCoords.x, screenToStageCoords.y));
 			
-			if (button == 1) {
-				camera.setLastCamTouch(screenX, screenY);
+			if ((button == 0) && (splineBuilder != null)) { //manage path
+				return splineBuilder.touchDown(screenToStageCoords.x, screenToStageCoords.y);
 			}
-			return true;
+			if (button == 1) { //drag scene
+				camera.setLastCamTouch(screenX, screenY);
+				return true;
+			}
+			
+			return false;
 		}
 
 		@Override
@@ -133,8 +198,13 @@ public class GdxScreen extends Screen implements IScreenStructureChangeListener 
 			
 			if (camera.isMapMoving()) {
 				camera.move(screenX, screenY);
+				return true;
 			}
-			return true;
+			else if (splineBuilder != null) {
+				return splineBuilder.touchDragged(screenToStageCoords.x, screenToStageCoords.y);
+			}
+			
+			return false;
 		}
 
 		@Override

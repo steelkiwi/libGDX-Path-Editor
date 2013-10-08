@@ -15,6 +15,8 @@ import com.steelkiwi.patheditor.gui.dlg.CreateNewProjectDialog;
 import com.steelkiwi.patheditor.gui.dlg.CreateNewProjectDialog.ICreateNewProjectHandler;
 import com.steelkiwi.patheditor.gui.dlg.CreateNewScreenDialog;
 import com.steelkiwi.patheditor.gui.dlg.CreateNewScreenDialog.ICreateNewScreenHandler;
+import com.steelkiwi.patheditor.gui.dlg.CreatePathDialog;
+import com.steelkiwi.patheditor.gui.dlg.CreatePathDialog.ICreatePathHandler;
 import com.steelkiwi.patheditor.proj.ScreenData;
 import com.steelkiwi.patheditor.utils.SwingHelper;
 
@@ -73,6 +75,35 @@ public class IMenuHandler implements ActionListener, ITreeHandler {
 			showSelectTextureDialog();
 			return;
 		}
+		
+		if (arg0.getActionCommand().equals(MenuConsts.addVertex)) {
+			showCreatePathDialog();
+			return;
+		}
+		
+		// ==============================================================
+		// path
+		// ==============================================================
+		
+		if (arg0.getActionCommand().equals(MenuConsts.moveVertex)) {
+			rootPane.onPathVertexEdit();
+			return;
+		}
+		
+		if (arg0.getActionCommand().equals(MenuConsts.insertVertex)) {
+			rootPane.onPathVertexInsert();
+			return;
+		}
+		
+		if (arg0.getActionCommand().equals(MenuConsts.removeVertex)) {
+			rootPane.onPathVertexRemove();
+			return;
+		}
+		
+		if (arg0.getActionCommand().equals(MenuConsts.clearPath)) {
+			rootPane.onPathClear();
+			return;
+		}
 	}
 
 	@Override
@@ -93,7 +124,7 @@ public class IMenuHandler implements ActionListener, ITreeHandler {
 				break;
 			}
 			case PATH: {
-				//TODO
+				rootPane.onLeafSwitched((String)data.getData(), path);
 				break;
 			}
 		}
@@ -141,6 +172,24 @@ public class IMenuHandler implements ActionListener, ITreeHandler {
 			@Override
 			public void getImageData(String name, String path, float scaleCoef) {
 				rootPane.onBGImageAdded(name, path, scaleCoef);
+			}
+		});
+		SwingHelper.setDialogWindowToCenter(dlg);
+		dlg.setModal(true);
+		dlg.setVisible(true);
+	}
+	
+	private void showCreatePathDialog() {
+		if (rootPane.getGlPanel().getGdxApp().isPathInit()) { 
+			rootPane.onPathVertexAdd();
+			return; 
+		}
+		
+		CreatePathDialog dlg = new CreatePathDialog(rootPane, new ICreatePathHandler() {
+			@Override
+			public void getPathData(String name, int pointsCnt, String controlColor, String segmentColor, String selectColor) {
+				rootPane.onPathCreate(name, pointsCnt, controlColor, segmentColor, selectColor);
+				rootPane.onPathVertexAdd();
 			}
 		});
 		SwingHelper.setDialogWindowToCenter(dlg);
