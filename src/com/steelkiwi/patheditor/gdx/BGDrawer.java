@@ -16,8 +16,9 @@
 
 package com.steelkiwi.patheditor.gdx;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -33,7 +34,13 @@ public class BGDrawer {
 	
 	public BGDrawer() {
 		renderer = new ShapeRenderer();
-		overlay = new Texture(Gdx.files.internal("data/overlay.jpg"));
+		
+		Pixmap p = new Pixmap(4, 4, Format.RGBA4444);
+		p.setColor(0.698f, 0.698f, 0.698f, 1f);
+		p.fill();
+		overlay = new Texture(p);
+		p.dispose();
+		
 		t = new Sprite(overlay);
 		b = new Sprite(overlay);
 		l = new Sprite(overlay);

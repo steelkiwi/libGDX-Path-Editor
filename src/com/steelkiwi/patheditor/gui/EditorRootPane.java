@@ -51,6 +51,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.steelkiwi.patheditor.consts.MenuConsts;
 import com.steelkiwi.patheditor.consts.MenuConsts.TREE_NODE_TYPE;
 import com.steelkiwi.patheditor.consts.MsgConsts;
+import com.steelkiwi.patheditor.consts.ResourcesConsts;
 import com.steelkiwi.patheditor.gdx.SplineBuilder.renderMode;
 import com.steelkiwi.patheditor.path.Path;
 import com.steelkiwi.patheditor.proj.ProjectData;
@@ -465,28 +466,28 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		
 		newProjectItem = new JMenuItem(MenuConsts.newProject);
 		newProjectItem.addActionListener(menuHandler);
-		newProjectItem.setIcon(new ImageIcon("data/menu/newProject_menu.png"));
+		newProjectItem.setIcon(new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_menu_newProject)));
 		menu.add(newProjectItem);
 		
 		openProjectItem = new JMenuItem(MenuConsts.openProject);
-		openProjectItem.setIcon(new ImageIcon("data/menu/openProject_menu.png"));
+		openProjectItem.setIcon(new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_menu_openProject)));
 		openProjectItem.addActionListener(menuHandler);
 		menu.add(openProjectItem);
 		
 		saveProjectItem = new JMenuItem(MenuConsts.saveProhect);
-		saveProjectItem.setIcon(new ImageIcon("data/menu/save_menu.png"));
+		saveProjectItem.setIcon(new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_menu_saveProject)));
 		saveProjectItem.addActionListener(menuHandler);
 		menu.add(saveProjectItem);
 		
 		closeProjectItem = new JMenuItem(MenuConsts.closeProject);
-		closeProjectItem.setIcon(new ImageIcon("data/menu/closeProject_menu.png"));
+		closeProjectItem.setIcon(new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_menu_closeProject)));
 		closeProjectItem.addActionListener(menuHandler);
 		menu.add(closeProjectItem);
 		
 		menu.add(new JSeparator());
 		
 		JMenuItem exitItem = new JMenuItem(MenuConsts.exit);
-		exitItem.setIcon(new ImageIcon("data/menu/exit_menu.png"));
+		exitItem.setIcon(new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_menu_exit)));
 		exitItem.addActionListener(menuHandler);
 		menu.add(exitItem);
 		
@@ -497,7 +498,7 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		JMenu menu = new JMenu(MenuConsts.screen);
 		
 		addScreen = new JMenuItem(MenuConsts.addScreen);
-		addScreen.setIcon(new ImageIcon("data/menu/addScreen_menu.png"));
+		addScreen.setIcon(new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_menu_addScreen)));
 		addScreen.addActionListener(menuHandler);
 		menu.add(addScreen);
 		
@@ -508,7 +509,7 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		JMenu menu = new JMenu(MenuConsts.bg);
 		
 		addBG = new JMenuItem(MenuConsts.addBG);
-		addBG.setIcon(new ImageIcon("data/menu/addImage_menu.png"));
+		addBG.setIcon(new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_menu_addBG)));
 		addBG.addActionListener(menuHandler);
 		menu.add(addBG);
 		
@@ -519,29 +520,29 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		JMenu menu = new JMenu(MenuConsts.path);
 		
 		addVertex = new JCheckBoxMenuItem(MenuConsts.addVertex);
-		addVertex.setIcon(new ImageIcon("data/menu/vertexAdd_menu.png"));
+		addVertex.setIcon(new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_menu_addVertex)));
 		addVertex.addActionListener(menuHandler);
 		menu.add(addVertex);
 		
 		editVertex = new JCheckBoxMenuItem(MenuConsts.moveVertex);
-		editVertex.setIcon(new ImageIcon("data/menu/vertexEdit_menu.png"));
+		editVertex.setIcon(new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_menu_editVertex)));
 		editVertex.addActionListener(menuHandler);
 		menu.add(editVertex);
 		
 		insertVertex = new JCheckBoxMenuItem(MenuConsts.insertVertex);
-		insertVertex.setIcon(new ImageIcon("data/menu/vertexInsert_menu.png"));
+		insertVertex.setIcon(new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_menu_insertVertex)));
 		insertVertex.addActionListener(menuHandler);
 		menu.add(insertVertex);
 		
 		removeVertex = new JCheckBoxMenuItem(MenuConsts.removeVertex);
-		removeVertex.setIcon(new ImageIcon("data/menu/vertexRemove_menu.png"));
+		removeVertex.setIcon(new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_menu_removeVertex)));
 		removeVertex.addActionListener(menuHandler);
 		menu.add(removeVertex);
 		
 		menu.add(new JSeparator());
 		
 		clearPath = new JMenuItem(MenuConsts.clearPath);
-		clearPath.setIcon(new ImageIcon("data/menu/pathClear_menu.png"));
+		clearPath.setIcon(new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_menu_clearPath)));
 		clearPath.addActionListener(menuHandler);
 		menu.add(clearPath);
 		
@@ -598,67 +599,67 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
 		toolBar.setFloatable(false);
 		
-		ImageIcon newProjectIcon = new ImageIcon("data/toolbar/newProject.png");
+		ImageIcon newProjectIcon = new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_toolbar_newProject));
 		newProjectButton = new JButton(newProjectIcon);
 		newProjectButton.setActionCommand(MenuConsts.newProject);
 		newProjectButton.setToolTipText(MenuConsts.newProject);
 		newProjectButton.addActionListener(menuHandler);
 		
-		ImageIcon openProjectIcon = new ImageIcon("data/toolbar/openProject.png");
+		ImageIcon openProjectIcon = new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_toolbar_openProject));
 		openProjectButton = new JButton(openProjectIcon);
 		openProjectButton.setActionCommand(MenuConsts.openProject);
 		openProjectButton.setToolTipText(MenuConsts.openProject);
 		openProjectButton.addActionListener(menuHandler);
 		
-		ImageIcon saveProjectIcon = new ImageIcon("data/toolbar/save.png");
+		ImageIcon saveProjectIcon = new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_toolbar_saveProject));
 		saveProjectButton = new JButton(saveProjectIcon);
 		saveProjectButton.setActionCommand(MenuConsts.saveProhect);
 		saveProjectButton.setToolTipText(MenuConsts.saveProhect);
 		saveProjectButton.addActionListener(menuHandler);
 		
-		ImageIcon closeProjectIcon = new ImageIcon("data/toolbar/closeProject.png");
+		ImageIcon closeProjectIcon = new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_toolbar_closeProject));
 		closeProjectButton = new JButton(closeProjectIcon);
 		closeProjectButton.setActionCommand(MenuConsts.closeProject);
 		closeProjectButton.setToolTipText(MenuConsts.closeProject);
 		closeProjectButton.addActionListener(menuHandler);
 		
-		ImageIcon addScreenIcon = new ImageIcon("data/toolbar/addScreen.png");
+		ImageIcon addScreenIcon = new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_toolbar_addScreen));
 		addScreenButton = new JButton(addScreenIcon);
 		addScreenButton.setActionCommand(MenuConsts.addScreen);
 		addScreenButton.setToolTipText(MenuConsts.addScreen);
 		addScreenButton.addActionListener(menuHandler);
 		
-		ImageIcon addBGIcon = new ImageIcon("data/toolbar/addImage.png");
+		ImageIcon addBGIcon = new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_toolbar_addBG));
 		addBGButton = new JButton(addBGIcon);
 		addBGButton.setActionCommand(MenuConsts.addBG);
 		addBGButton.setToolTipText(MenuConsts.addBG);
 		addBGButton.addActionListener(menuHandler);
 		
-		ImageIcon addVertexIcon = new ImageIcon("data/toolbar/vertexAdd.png");
+		ImageIcon addVertexIcon = new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_toolbar_addVertex));
 		addVertexButton = new JToggleButton(addVertexIcon);
 		addVertexButton.setActionCommand(MenuConsts.addVertex);
 		addVertexButton.setToolTipText(MenuConsts.addVertex);
 		addVertexButton.addActionListener(menuHandler);
 		
-		ImageIcon editVertexIcon = new ImageIcon("data/toolbar/vertexEdit.png");
+		ImageIcon editVertexIcon = new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_toolbar_editVertex));
 		editVertexButton = new JToggleButton(editVertexIcon);
 		editVertexButton.setActionCommand(MenuConsts.moveVertex);
 		editVertexButton.setToolTipText(MenuConsts.moveVertex);
 		editVertexButton.addActionListener(menuHandler);
 		
-		ImageIcon insertVertexIcon = new ImageIcon("data/toolbar/vertexInsert.png");
+		ImageIcon insertVertexIcon = new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_toolbar_insertVertex));
 		insertVertexButton = new JToggleButton(insertVertexIcon);
 		insertVertexButton.setActionCommand(MenuConsts.insertVertex);
 		insertVertexButton.setToolTipText(MenuConsts.insertVertex);
 		insertVertexButton.addActionListener(menuHandler);
 		
-		ImageIcon removeVertexIcon = new ImageIcon("data/toolbar/vertexRemove.png");
+		ImageIcon removeVertexIcon = new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_toolbar_removeVertex));
 		removeVertexButton = new JToggleButton(removeVertexIcon);
 		removeVertexButton.setActionCommand(MenuConsts.removeVertex);
 		removeVertexButton.setToolTipText(MenuConsts.removeVertex);
 		removeVertexButton.addActionListener(menuHandler);
 		
-		ImageIcon clearPathIcon = new ImageIcon("data/toolbar/pathClear.png");
+		ImageIcon clearPathIcon = new ImageIcon(this.getClass().getResource(ResourcesConsts.ic_toolbar_clearPath));
 		clearPathButton = new JButton(clearPathIcon);
 		clearPathButton.setActionCommand(MenuConsts.clearPath);
 		clearPathButton.setToolTipText(MenuConsts.clearPath);
