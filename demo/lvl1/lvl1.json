@@ -1,0 +1,1 @@
+{"screen":{"name":"lvl1","width":1024,"height":600,"xmlPath":"/lvl1/lvl1.xml","jsonPath":"/lvl1/lvl1.json","bg":{"name":"bg","type":0,"texturePath":"/res/bg1.jpg","scaleX":1.0,"scaleY":1.0,"x":0.0,"y":0.0,"angle":0.0},"path":{"xmlPath":"/lvl1/path/path.xml","jsonPath":"/lvl1/path/path.json"}}}

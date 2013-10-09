@@ -1,0 +1,21 @@
+<screen>
+	<name>lvl2</name>
+	<width>1024</width>
+	<height>600</height>
+	<xmlPath>/lvl2/lvl2.xml</xmlPath>
+	<jsonPath>/lvl2/lvl2.json</jsonPath>
+	<bg>
+		<name>bg</name>
+		<type>0</type>
+		<texturePath>/res/bg2.jpg</texturePath>
+		<scaleX>1.0</scaleX>
+		<scaleY>1.0</scaleY>
+		<x>0.0</x>
+		<y>0.0</y>
+		<angle>0.0</angle>
+	</bg>
+	<path>
+		<xmlPath>/lvl2/path/path.xml</xmlPath>
+		<jsonPath>/lvl2/path/path.json</jsonPath>
+	</path>
+</screen>

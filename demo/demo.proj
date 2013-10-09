@@ -1,0 +1,11 @@
+<project>
+	<name>demo</name>
+	<screen>
+		<xml>/lvl1/lvl1.xml</xml>
+		<json>/lvl1/lvl1.json</json>
+	</screen>
+	<screen>
+		<xml>/lvl2/lvl2.xml</xml>
+		<json>/lvl2/lvl2.json</json>
+	</screen>
+</project>
