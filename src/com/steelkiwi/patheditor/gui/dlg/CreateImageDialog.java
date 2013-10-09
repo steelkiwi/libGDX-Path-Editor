@@ -18,6 +18,7 @@ package com.steelkiwi.patheditor.gui.dlg;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -30,6 +31,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
 import javax.swing.WindowConstants;
+import javax.swing.filechooser.FileView;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
@@ -52,7 +54,7 @@ public class CreateImageDialog extends JDialog {
     private JTextField pathTextField;
     private JTextField coefTextField;
     
-	public CreateImageDialog(JFrame owner, final ICreateImageHandler handler) {
+	public CreateImageDialog(JFrame owner, final String projPath, final ICreateImageHandler handler) {
 		super(owner, DIALOG_TITLE);
 
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -73,7 +75,14 @@ public class CreateImageDialog extends JDialog {
         chooseBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JFileChooser fileChooser = new JFileChooser();
+				final File projDir = new File(projPath);
+				JFileChooser fileChooser = new JFileChooser(projDir);
+				fileChooser.setFileView(new FileView() {
+				    @Override
+				    public Boolean isTraversable(File f) {
+				    	return f.getAbsolutePath().startsWith(projDir.getAbsolutePath());
+				    }
+				});
 				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				int status = fileChooser.showOpenDialog(CreateImageDialog.this);
 				if (status == JFileChooser.APPROVE_OPTION) {

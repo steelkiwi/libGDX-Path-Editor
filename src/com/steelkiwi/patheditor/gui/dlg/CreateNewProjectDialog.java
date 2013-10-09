@@ -87,6 +87,10 @@ public class CreateNewProjectDialog extends JDialog {
 					JOptionPane.showMessageDialog(CreateNewProjectDialog.this, "Please, fill all fields", DIALOG_TITLE, JOptionPane.ERROR_MESSAGE);
 					return;
 				}
+/*				if (!FileUtils.checkDirIsEmpty(folder)) {
+					JOptionPane.showMessageDialog(CreateNewProjectDialog.this, "Selected directory is not empty", DIALOG_TITLE, JOptionPane.ERROR_MESSAGE);
+					return;
+				}*/
 				handler.getNewProjectData(projName, folder);
 				dispose();
 			}

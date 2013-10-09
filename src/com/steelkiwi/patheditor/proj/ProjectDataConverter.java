@@ -22,9 +22,7 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -38,6 +36,7 @@ import com.badlogic.gdx.utils.XmlWriter;
 import com.steelkiwi.patheditor.gui.dlg.CreateImageDialog.widgetType;
 import com.steelkiwi.patheditor.path.Path;
 import com.steelkiwi.patheditor.path.PathVertex;
+import com.steelkiwi.patheditor.utils.FileUtils;
 import com.steelkiwi.patheditor.widgets.GdxImage;
 import com.steelkiwi.patheditor.widgets.GdxPath;
 import com.steelkiwi.patheditor.widgets.WidgetManager;
@@ -51,39 +50,12 @@ public class ProjectDataConverter {
 	// ==============================================================
 	
 	public static void saveProject(ProjectData projData) throws Exception {
-		File oldProjDir = new File(projData.getPath());
-		if (!oldProjDir.exists() || !oldProjDir.isDirectory()) { 
-			oldProjDir.mkdir(); 
+		File projDir = new File(projData.getPath());
+		if (!projDir.exists() || !projDir.isDirectory()) { 
+			projDir.mkdir(); 
 		}
 		
-		//rename old proj dir
-		String tempDirPath = projData.getPath() + "_" + new SimpleDateFormat("yy.MM.dd_hh:mm:ss").format(Calendar.getInstance().getTime()).toString();
-		File tempProjDir = new File(tempDirPath);
-		if (!oldProjDir.renameTo(tempProjDir)) { throw new Exception(); }
-		
-		//create new proj dir
-		File newProjDir = new File(projData.getPath());
-		newProjDir.mkdir();
-		
-		try {
-			//fill new proj dir
-			saveProjectData(projData);
-			
-			//delete old proj dir
-			oldProjDir = new File(tempDirPath);
-			deleteDir(oldProjDir);
-		}
-		catch (Exception e) {
-			//delete newly created proj dir
-			deleteDir(newProjDir);
-			
-			//return old proj dir
-			oldProjDir  = new File(tempDirPath);
-			tempProjDir = new File(projData.getPath());
-			oldProjDir.renameTo(tempProjDir);
-			
-			throw e;
-		}
+		saveProjectData(projData);
 	}
 	
 	private static void saveProjectData(ProjectData projData) throws Exception {
@@ -99,7 +71,7 @@ public class ProjectDataConverter {
 		xmlWriter.element("project");
 		
 		xmlWriter.element("name", projData.getName());
-		xmlWriter.element("path", projData.getPath());
+		//xmlWriter.element("path", projData.getPath()); //TODO
 		
 		if (projData.getScreens() != null) {
 			for (int i=0; i<projData.getScreens().size(); i++) {
@@ -127,10 +99,10 @@ public class ProjectDataConverter {
 		for (int i=0; i<projData.getScreens().size(); i++) {
 			scrData = projData.getScreens().get(i);
 			createScreenDir(projData.getPath(), scrData.getName());
-			saveScreenToXML(scrData, projData.getPath());
-			saveScreenToJSON(scrData, projData.getPath());
+			saveScreenToXML(projData.getPath(), scrData);
+			saveScreenToJSON(projData.getPath(), scrData);
 			if ((scrData.getPath() != null) && (scrData.getPath().getPath() != null)) {
-				savePath(scrData);
+				savePath(projData.getPath(), scrData);
 			}
 		}
 	}
@@ -146,8 +118,8 @@ public class ProjectDataConverter {
 		}
 	}
 	
-	private static void saveScreenToXML(ScreenData scrData, String projPath) throws Exception {
-		String path = scrData.getXmlPath();
+	private static void saveScreenToXML(String projPath, ScreenData scrData) throws Exception {
+		String path = projPath + PATH_SEPARATOR + scrData.getXmlPath();
 		File scrFile = new File(path);
 		
 		if (scrFile.exists()) { scrFile.delete(); }
@@ -168,7 +140,7 @@ public class ProjectDataConverter {
 			xmlWriter.element("bg")
 					 	.element("name",        scrData.getBgImage().name)
 					 	.element("type",        (getWidgetType(scrData.getBgImage()) != null) ? getWidgetType(scrData.getBgImage()).ordinal() : -1)
-					 	.element("texturePath", ((GdxImage)scrData.getBgImage()).getTexPath())
+					 	.element("texturePath", FileUtils.getElementRelativePath(projPath, ((GdxImage)scrData.getBgImage()).getTexPath()))
 					 	.element("scaleX",      scrData.getBgImage().scaleX)
 					 	.element("scaleY",      scrData.getBgImage().scaleY)
 					 	.element("x",           scrData.getBgImage().x)
@@ -192,8 +164,8 @@ public class ProjectDataConverter {
 		writer.close();
 	}
 	
-	private static void saveScreenToJSON(ScreenData scrData, String projPath) throws Exception {
-		String path = scrData.getJsonPath();
+	private static void saveScreenToJSON(String projPath, ScreenData scrData) throws Exception {
+		String path = projPath + PATH_SEPARATOR + scrData.getJsonPath();
 		File scrFile = new File(path);
 		
 		if (scrFile.exists()) { scrFile.delete(); }
@@ -213,7 +185,7 @@ public class ProjectDataConverter {
 			jsonWriter.object("bg")
 						.set("name",        scrData.getBgImage().name)
 						.set("type",        (getWidgetType(scrData.getBgImage()) != null) ? getWidgetType(scrData.getBgImage()).ordinal() : -1)
-						.set("texturePath", ((GdxImage)scrData.getBgImage()).getTexPath())
+						.set("texturePath", FileUtils.getElementRelativePath(projPath, ((GdxImage)scrData.getBgImage()).getTexPath()))
 						.set("scaleX",      scrData.getBgImage().scaleX)
 						.set("scaleY",      scrData.getBgImage().scaleY)
 						.set("x",           scrData.getBgImage().x)
@@ -238,16 +210,16 @@ public class ProjectDataConverter {
 		writer.close();
 	}
 	
-	private static void savePath(ScreenData scrData) throws Exception {
+	private static void savePath(String projPath, ScreenData scrData) throws Exception {
 		if ((scrData.getPath() != null) && (scrData.getPath().getPath() != null)) {
-			createPathDir(getScreenDir(scrData.getXmlPath()), "path");
-			savePathToXml(scrData.getPath());
-			savePathToJSON(scrData.getPath());
+			createPathDir(projPath, getScreenDir(scrData.getXmlPath()), "path");
+			savePathToXml(projPath, scrData.getPath());
+			savePathToJSON(projPath, scrData.getPath());
 		}
 	}
 	
-	private static void createPathDir(String scrPath, String pathDirName) {
-		String dir = scrPath + PATH_SEPARATOR + pathDirName;
+	private static void createPathDir(String projPath, String scrPath, String pathDirName) {
+		String dir = projPath + scrPath + PATH_SEPARATOR + pathDirName;
 		File scrDir = new File(dir);
 		if (!scrDir.exists()) {
 			scrDir.mkdir();
@@ -257,8 +229,8 @@ public class ProjectDataConverter {
 		}
 	}
 	
-	private static void savePathToXml(GdxPath gdxPath) throws Exception {
-		String path = gdxPath.getXmlPath();
+	private static void savePathToXml(String projPath, GdxPath gdxPath) throws Exception {
+		String path = projPath + gdxPath.getXmlPath();
 		File pathFile = new File(path);
 		
 		if (pathFile.exists()) { pathFile.delete(); }
@@ -315,8 +287,8 @@ public class ProjectDataConverter {
 		writer.close();
 	}
 	
-	private static void savePathToJSON(GdxPath gdxPath) throws Exception {
-		String path = gdxPath.getJsonPath();
+	private static void savePathToJSON(String projPath, GdxPath gdxPath) throws Exception {
+		String path = projPath + gdxPath.getJsonPath();
 		File pathFile = new File(path);
 		
 		if (pathFile.exists()) { pathFile.delete(); }
@@ -388,7 +360,7 @@ public class ProjectDataConverter {
 		if (xmlRoot == null) { throw new Exception(); }
 		
 		String projName = xmlRoot.get("name", "");
-		String projPath = xmlRoot.get("path", "");
+		String projPath = new File(path).getParent(); //xmlRoot.get("path", ""); //TODO
 		if ((projName.length() <= 0) || (projPath.length() <= 0)) { throw new Exception(); }
 		
 		ProjectData projData = new ProjectData();
@@ -404,8 +376,8 @@ public class ProjectDataConverter {
 			xmlPath  = screensRoot.get(i).get("xml",  "");
 			jsonPath = screensRoot.get(i).get("json", "");
 			if ((xmlPath.length() <= 0) || (jsonPath.length() <= 0)) { throw new Exception(); }
-			ScreenData scrData = getScreenFromJSON(jsonPath);
-			//ScreenData scrData = getScreenFromXML(xmlPath);
+			ScreenData scrData = getScreenFromJSON(projPath, jsonPath);
+			//ScreenData scrData = getScreenFromXML(projPath, xmlPath);
 			if (scrData == null) { throw new Exception(); }
 			projData.getScreens().add(scrData);
 		}
@@ -413,11 +385,11 @@ public class ProjectDataConverter {
 		return projData;
 	}
 	
-	private static ScreenData getScreenFromXML(String path) throws Exception {
-		File scrFile = new File(path);
+	private static ScreenData getScreenFromXML(String projPath, String path) throws Exception {
+		File scrFile = new File(projPath + path);
 		if (!scrFile.exists()) { throw new Exception(); }
 		
-		File xmlFile = new File(path);
+		File xmlFile = new File(projPath + path);
 		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(xmlFile), "utf8"));
 		
 		XmlReader xmlReader = new XmlReader();
@@ -448,14 +420,14 @@ public class ProjectDataConverter {
 			float bgY 	     = bgRoot.getFloat("y", -1f);
 			float bgAngle 	 = bgRoot.getFloat("angle", -1f);
 			
-			scrData.setBgImage(WidgetManager.createBGImage(bgName, bgTexPath, bgScaleX, bgScaleY, bgX, bgY, bgAngle));
+			scrData.setBgImage(WidgetManager.createBGImage(bgName, projPath + bgTexPath, bgScaleX, bgScaleY, bgX, bgY, bgAngle));
 		}
 		
 		Element pathRoot = xmlRoot.getChildByName("path");
 		if (pathRoot != null) {
 			xml = pathRoot.get("xmlPath", "");
 			if (xml.length() > 0) {
-				scrData.setPath(getPathFromXML(xml));
+				scrData.setPath(getPathFromXML(projPath, xml));
 			}
 		}
 		
@@ -463,11 +435,11 @@ public class ProjectDataConverter {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static ScreenData getScreenFromJSON(String path) throws Exception {
-		File scrFile = new File(path);
+	private static ScreenData getScreenFromJSON(String projPath, String path) throws Exception {
+		File scrFile = new File(projPath + path);
 		if (!scrFile.exists()) { throw new Exception(); }
 		
-		File xmlFile = new File(path);
+		File xmlFile = new File(projPath + path);
 		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(xmlFile), "utf8"));
 		
 		JsonReader jsonReader = new JsonReader();
@@ -501,25 +473,25 @@ public class ProjectDataConverter {
 			float bgY 	     = (Float)  bgData.get("y");
 			float bgAngle 	 = (Float)  bgData.get("angle");
 			
-			scrData.setBgImage(WidgetManager.createBGImage(bgName, bgTexPath, bgScaleX, bgScaleY, bgX, bgY, bgAngle));
+			scrData.setBgImage(WidgetManager.createBGImage(bgName, projPath + bgTexPath, bgScaleX, bgScaleY, bgX, bgY, bgAngle));
 		}
 		
 		if (screenData.get("path") != null) {
 			OrderedMap<String, Object> pathData = (OrderedMap<String, Object>) screenData.get("path");
 			json = (String) pathData.get("jsonPath");
 			if (xml.length() > 0) {
-				scrData.setPath(getPathFromJSON(json));
+				scrData.setPath(getPathFromJSON(projPath, json));
 			}
 		}
 		
 		return scrData;
 	}
 	
-	private static GdxPath getPathFromXML(String path) throws Exception {
-		File scrFile = new File(path);
+	private static GdxPath getPathFromXML(String projPath, String path) throws Exception {
+		File scrFile = new File(projPath + path);
 		if (!scrFile.exists()) { throw new Exception(); }
 		
-		File xmlFile = new File(path);
+		File xmlFile = new File(projPath + path);
 		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(xmlFile), "utf8"));
 		
 		XmlReader xmlReader = new XmlReader();
@@ -573,11 +545,11 @@ public class ProjectDataConverter {
 		return gdxPath;
 	}
 	
-	private static GdxPath getPathFromJSON(String path) throws Exception {
-		File scrFile = new File(path);
+	private static GdxPath getPathFromJSON(String projPath, String path) throws Exception {
+		File scrFile = new File(projPath + path);
 		if (!scrFile.exists()) { throw new Exception(); }
 		
-		File xmlFile = new File(path);
+		File xmlFile = new File(projPath + path);
 		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(xmlFile), "utf8"));
 		
 		JsonReader jsonReader = new JsonReader();
@@ -640,27 +612,12 @@ public class ProjectDataConverter {
 	// utils
 	// ==============================================================
 	
-	private static boolean deleteDir(File path) {
-		if (path.exists()) {
-	        File[] files = path.listFiles();
-	        for (int i=0; i<files.length; i++) {
-	            if (files[i].isDirectory()) {
-	            	deleteDir(files[i]);
-	            }
-	            else {
-	            	files[i].delete();
-	            }
-	        }
-	    }
-	    return (path.delete());
-	}
-	
 	public static String genScreenXMLPath(String projPath, String screenName) {
-		return String.format("%s%s%s%s%s.xml", projPath, PATH_SEPARATOR, screenName, PATH_SEPARATOR, screenName);
+		return String.format("%s%s%s%s.xml", PATH_SEPARATOR, screenName, PATH_SEPARATOR, screenName);
 	}
 	
 	public static String genScreenJSONPath(String projPath, String screenName) {
-		return String.format("%s%s%s%s%s.json", projPath, PATH_SEPARATOR, screenName, PATH_SEPARATOR, screenName);
+		return String.format("%s%s%s%s.json", PATH_SEPARATOR, screenName, PATH_SEPARATOR, screenName);
 	}
 	
 	public static String genPathXMLPath(String screenPath, String pathName) {

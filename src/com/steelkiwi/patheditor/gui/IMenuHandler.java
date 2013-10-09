@@ -184,7 +184,7 @@ public class IMenuHandler implements ActionListener, ITreeHandler {
 	}
 	
 	private void showSelectTextureDialog() {
-		CreateImageDialog dlg = new CreateImageDialog(rootPane, new ICreateImageHandler() {
+		CreateImageDialog dlg = new CreateImageDialog(rootPane, rootPane.getProjectHomdeDir(), new ICreateImageHandler() {
 			@Override
 			public void getImageData(String name, String path, float scaleCoef) {
 				rootPane.onBGImageAdded(name, path, scaleCoef);

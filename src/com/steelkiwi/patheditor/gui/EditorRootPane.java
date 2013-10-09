@@ -934,6 +934,10 @@ public class EditorRootPane extends JFrame implements IProjectHandler {
 		}
 	}
 	
+	public String getProjectHomdeDir() {
+		return (projectData != null && projectData.getPath() != null) ? projectData.getPath() : "";
+	}
+	
 	// ==============================================================
 	// getters & setters
 	// ==============================================================
