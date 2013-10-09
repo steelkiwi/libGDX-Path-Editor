@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="libGDXPathEditor" basedir="." default="makejar">
+
+	<property name="src.dir" value="src" />
+	<property name="bin.dir" value="bin" />
+	<property name="lib.dir" value="libs" />
+	<property name="res.dir" value="data" />
+	<property name="jar.dir" value="jar" />
+
+	<property name="main-class" value="com.steelkiwi.patheditor.EditorMain" />
+
+	<path id="classpath">
+		<fileset dir="${lib.dir}" includes="**/*.jar" />
+	</path>
+
+	<target name="clean">
+		<delete dir="${bin.dir}" />
+	</target>
+
+	<target name="compile" depends="clean">
+		<mkdir dir="${bin.dir}" />
+		<javac srcdir="${src.dir}" destdir="${bin.dir}"
+			includeantruntime="false" classpathref="classpath" />
+	</target>
+
+	<target name="makejar" depends="compile">
+		<mkdir dir="${jar.dir}" />
+		<jar destfile="${jar.dir}/libGDX-path-editor.jar" basedir="${bin.dir}">
+			<zipgroupfileset dir="${lib.dir}" includes="*.jar" />
+			<fileset dir="${res.dir}" />
+			<manifest>
+				<attribute name="Class-Path" value="${lib.dir}/*.jar" />
+				<attribute name="Main-Class" value="${main-class}" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="run" depends="makejar">
+		<java jar="${jar.dir}/libGDX-path-editor.jar" fork="true" />
+	</target>
+
+</project>
