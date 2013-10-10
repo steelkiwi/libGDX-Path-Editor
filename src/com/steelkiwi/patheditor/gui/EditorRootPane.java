@@ -63,7 +63,7 @@ import com.steelkiwi.patheditor.widgets.GdxPath;
 public class EditorRootPane extends JFrame implements IProjectHandler {
 	private static final long serialVersionUID = -3021481019247627930L;
 
-	private final static String WINDOW_TITLE = "Steelkiwi Game Editor";
+	private final static String WINDOW_TITLE = "libGDX Path Editor";
 
 	private IMenuHandler menuHandler;
 	private JMenuItem newProjectItem;
